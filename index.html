@@ -1,12 +1,22 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#07101f">
+
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1,viewport-fit=cover">
+
+<meta
+  name="theme-color"
+  content="#07101f">
+
 <title>THE SUMMIT</title>
 
+
 <style>
+
 :root{
   --bg:#07101f;
   --panel:#0d1b30;
@@ -20,20 +30,25 @@
   --good:#5ce0a2
 }
 
+
 *{
   box-sizing:border-box
 }
 
-html,body{
+
+html,
+body{
   margin:0;
   background:var(--bg);
   color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif
 }
 
+
 body{
   min-height:100vh
 }
+
 
 .app{
   width:min(430px,100%);
@@ -44,20 +59,56 @@ body{
   position:relative
 }
 
-button,input,select{
+
+button,
+input,
+select{
   font:inherit
 }
+
 
 button{
   touch-action:manipulation
 }
 
-.top{
+
+/* SCREEN */
+
+.screen{
+  display:none;
+  animation:in .18s ease
+}
+
+
+.screen.active{
+  display:block
+}
+
+
+@keyframes in{
+
+  from{
+    opacity:.3;
+    transform:translateY(5px)
+  }
+
+  to{
+    opacity:1;
+    transform:none
+  }
+
+}
+
+
+/* TOP BAR */
+
+.screen-top{
   display:flex;
   justify-content:space-between;
   align-items:center;
   margin-bottom:20px
 }
+
 
 .brand{
   font-weight:900;
@@ -65,39 +116,62 @@ button{
   font-size:18px
 }
 
+
 .brand span{
   color:var(--blue)
 }
 
-.rank{
-  font-size:11px;
+
+.logout{
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:1px;
   color:var(--muted);
+  background:none;
   border:1px solid var(--line);
-  padding:7px 10px;
+  padding:8px 11px;
   border-radius:999px;
-  text-transform:uppercase;
-  letter-spacing:1px
+  cursor:pointer
 }
 
-.screen{
-  display:none;
-  animation:in .18s ease
+
+.logout:active{
+  transform:scale(.97)
 }
 
-.screen.active{
-  display:block
+
+/* LOGIN */
+
+.login{
+  min-height:calc(100vh - 108px);
+  align-items:center
 }
 
-@keyframes in{
-  from{
-    opacity:.3;
-    transform:translateY(5px)
-  }
-  to{
-    opacity:1;
-    transform:none
-  }
+
+.login.active{
+  display:flex
 }
+
+
+.loginbox{
+  width:100%
+}
+
+
+.loginbox h1{
+  font-size:50px;
+  line-height:.9;
+  margin:12px 0
+}
+
+
+.loginbox p{
+  color:var(--muted);
+  line-height:1.45
+}
+
+
+/* GENERAL */
 
 .eyebrow{
   color:var(--blue2);
@@ -107,47 +181,6 @@ button{
   text-transform:uppercase
 }
 
-.hero h1{
-  font-size:48px;
-  line-height:.9;
-  margin:8px 0 12px;
-  letter-spacing:-2px
-}
-
-.hero p{
-  color:var(--muted);
-  line-height:1.45;
-  margin:0 0 22px
-}
-
-.peak{
-  height:150px;
-  border:1px solid #1f4168;
-  background:linear-gradient(145deg,#0d1d33,#0a1526);
-  border-radius:24px;
-  margin:20px 0;
-  position:relative;
-  overflow:hidden
-}
-
-.peak:before{
-  content:"";
-  position:absolute;
-  inset:20px 40px 0;
-  background:
-    linear-gradient(135deg,transparent 49%,#3f91ff 50%,transparent 51%),
-    linear-gradient(45deg,transparent 49%,#3f91ff 50%,transparent 51%);
-  opacity:.65
-}
-
-.peak:after{
-  content:"";
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:18px;
-  border-top:1px solid #23466e
-}
 
 .btn{
   width:100%;
@@ -162,25 +195,30 @@ button{
   cursor:pointer
 }
 
+
 .btn.primary{
   background:var(--blue);
   border-color:var(--blue);
   color:#06101e
 }
 
+
 .btn.ghost{
   background:transparent
 }
+
 
 .btn.danger{
   border-color:#71303d;
   color:#ff9aa7
 }
 
+
 .btn:disabled{
   opacity:.45;
   cursor:default
 }
+
 
 .section-title{
   display:flex;
@@ -189,19 +227,23 @@ button{
   margin:8px 0 12px
 }
 
+
 .section-title h2{
   font-size:22px;
   margin:0
 }
+
 
 .count{
   color:var(--muted);
   font-size:12px
 }
 
+
 .field{
   margin:16px 0
 }
+
 
 .field label{
   display:block;
@@ -211,6 +253,7 @@ button{
   text-transform:uppercase;
   margin-bottom:8px
 }
+
 
 .input{
   width:100%;
@@ -222,9 +265,11 @@ button{
   outline:none
 }
 
+
 .input:focus{
   border-color:var(--blue)
 }
+
 
 .card{
   background:linear-gradient(145deg,#10233d,#0b192d);
@@ -234,16 +279,21 @@ button{
   margin:10px 0
 }
 
+
+/* FIGHTERS */
+
 .fighter-head{
   display:flex;
   justify-content:space-between;
   align-items:start
 }
 
+
 .name{
   font-size:21px;
   font-weight:900
 }
+
 
 .human{
   color:var(--muted);
@@ -253,18 +303,22 @@ button{
   margin-top:3px
 }
 
+
 .record{
   font-weight:900;
   font-size:13px
 }
 
+
 .record .w{
   color:var(--good)
 }
 
+
 .record .l{
   color:#ff7d8d
 }
+
 
 .stats{
   display:grid;
@@ -272,6 +326,7 @@ button{
   gap:7px;
   margin-top:14px
 }
+
 
 .stat{
   background:#09172a;
@@ -281,10 +336,12 @@ button{
   text-align:center
 }
 
+
 .stat b{
   display:block;
   font-size:21px
 }
+
 
 .stat small{
   color:var(--muted);
@@ -292,12 +349,14 @@ button{
   letter-spacing:1px
 }
 
+
 .actions{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:8px;
   margin-top:12px
 }
+
 
 .smallbtn{
   border:1px solid var(--line);
@@ -309,6 +368,7 @@ button{
   font-weight:800
 }
 
+
 .empty{
   border:1px dashed #2a4b70;
   border-radius:18px;
@@ -318,11 +378,15 @@ button{
   line-height:1.5
 }
 
+
+/* FIGHT */
+
 .fight-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:10px
 }
+
 
 .versus{
   text-align:center;
@@ -331,6 +395,7 @@ button{
   letter-spacing:2px;
   margin:12px 0
 }
+
 
 .fighter-choice{
   border:1px solid var(--line);
@@ -343,15 +408,18 @@ button{
   width:100%
 }
 
+
 .fighter-choice:active{
   transform:scale(.985);
   border-color:var(--blue)
 }
 
+
 .fighter-choice .mini{
   font-size:18px;
   font-weight:900
 }
+
 
 .fighter-choice .mini-record{
   font-size:10px;
@@ -359,10 +427,14 @@ button{
   margin-top:3px
 }
 
+
+/* RESULT */
+
 .result{
   text-align:center;
   padding-top:12px
 }
+
 
 .result .winner{
   font-size:42px;
@@ -371,11 +443,14 @@ button{
   margin:8px 0
 }
 
+
 .result .sub{
   color:var(--muted)
 }
 
+
 /* BOTTOM NAVIGATION */
+
 .nav{
   position:fixed;
   z-index:50;
@@ -383,7 +458,7 @@ button{
   bottom:0;
   transform:translateX(-50%);
   width:min(430px,100%);
-  display:grid;
+  display:none;
   grid-template-columns:repeat(3,1fr);
   gap:6px;
   padding:8px 10px calc(8px + env(safe-area-inset-bottom));
@@ -391,6 +466,7 @@ button{
   backdrop-filter:blur(14px);
   border-top:1px solid #23466e
 }
+
 
 .nav button{
   border:1px solid transparent;
@@ -403,11 +479,13 @@ button{
   letter-spacing:.8px
 }
 
+
 .nav button.active{
   background:#12365d;
   border-color:#3f91ff;
   color:#fff
 }
+
 
 .nav strong{
   display:block;
@@ -415,6 +493,9 @@ button{
   line-height:18px;
   margin-bottom:3px
 }
+
+
+/* TOAST */
 
 .toast{
   position:fixed;
@@ -434,10 +515,14 @@ button{
   z-index:80
 }
 
+
 .toast.show{
   opacity:1;
   transform:translateX(-50%)
 }
+
+
+/* MODAL */
 
 .modal{
   position:fixed;
@@ -448,9 +533,11 @@ button{
   z-index:70
 }
 
+
 .modal.show{
   display:flex
 }
+
 
 .sheet{
   width:min(430px,100%);
@@ -463,14 +550,17 @@ button{
   overflow:auto
 }
 
+
 .sheet h3{
   margin:0 0 6px
 }
+
 
 .sheet p{
   color:var(--muted);
   font-size:13px
 }
+
 
 .listbtn{
   width:100%;
@@ -483,29 +573,8 @@ button{
   margin:5px 0
 }
 
-.login{
-  min-height:calc(100vh - 108px);
-  align-items:center
-}
 
-.login.active{
-  display:flex
-}
-
-.loginbox{
-  width:100%
-}
-
-.loginbox h1{
-  font-size:50px;
-  line-height:.9;
-  margin:12px 0
-}
-
-.loginbox p{
-  color:var(--muted);
-  line-height:1.45
-}
+/* ERROR */
 
 .error{
   color:#ff9aa7;
@@ -514,47 +583,64 @@ button{
   margin-top:8px
 }
 
-.logout{
-  font-size:10px;
-  color:var(--muted);
-  background:none;
-  border:0;
-  padding:4px;
-  cursor:pointer
-}
 </style>
 </head>
 
+
 <body>
+
 
 <div class="app">
 
+
 <main>
 
+
 <!-- LOGIN -->
+
 <section id="login" class="screen active login">
+
   <div class="loginbox">
 
-    <div class="eyebrow">Private Arena Access</div>
+    <div class="eyebrow">
+      Private Arena Access
+    </div>
 
-    <h1>THE<br>SUMMIT.</h1>
 
-    <p>Only One Reaches The Top.</p>
+    <h1>
+      THE<br>
+      SUMMIT.
+    </h1>
+
+
+    <p>
+      Only One Reaches The Top.
+    </p>
+
 
     <div class="card">
 
       <div class="field">
-        <label>Email</label>
+
+        <label>
+          Email
+        </label>
+
         <input
           id="email"
           class="input"
           type="email"
           autocomplete="email"
           placeholder="you@example.com">
+
       </div>
 
+
       <div class="field">
-        <label>Password</label>
+
+        <label>
+          Password
+        </label>
 
         <input
           id="password"
@@ -564,85 +650,76 @@ button{
           placeholder="Your password"
           onkeydown="if(event.key==='Enter')login()">
 
-        <div id="loginError" class="error"></div>
+        <div
+          id="loginError"
+          class="error">
+        </div>
+
       </div>
 
-      <button class="btn primary" onclick="login()">
+
+      <button
+        class="btn primary"
+        onclick="login()">
+
         ENTER THE SUMMIT
+
       </button>
 
-      <button class="btn" onclick="signUp()">
+
+      <button
+        class="btn"
+        onclick="signUp()">
+
         CREATE ACCOUNT
+
       </button>
 
     </div>
 
   </div>
+
 </section>
 
 
-<!-- HOME -->
-<section id="home" class="screen">
 
-  <header class="top">
+<!-- CREATE -->
+
+<section id="create" class="screen">
+
+  <div class="screen-top">
 
     <div class="brand">
       THE <span>SUMMIT</span>
     </div>
 
-    <div>
-      <span class="rank" id="rank">#—</span>
-      <button class="logout" onclick="logout()">LOG OUT</button>
-    </div>
+    <button
+      class="logout"
+      onclick="logout()">
 
-  </header>
+      LOG OUT
 
-  <div class="hero">
-
-    <div class="eyebrow">
-      The Human Competition
-    </div>
-
-    <h1>
-      ENTER<br>
-      THE ARENA.
-    </h1>
-
-    <p>
-      Create human fighters, build permanent records and decide who wins every fight.
-    </p>
+    </button>
 
   </div>
 
-  <div class="peak"></div>
-
-  <button class="btn primary" onclick="go('create')">
-    CREATE FIGHTER
-  </button>
-
-  <button class="btn" onclick="go('fight')">
-    ENTER FIGHT
-  </button>
-
-  <button class="btn ghost" onclick="go('fighters')">
-    VIEW FIGHTERS
-  </button>
-
-</section>
-
-
-<!-- CREATE -->
-<section id="create" class="screen">
 
   <div class="section-title">
-    <h2>CREATE FIGHTER</h2>
-    <span class="count">UNLIMITED PER ACCOUNT</span>
+
+    <h2>
+      CREATE FIGHTER
+    </h2>
+
   </div>
+
 
   <div class="card">
 
     <div class="field">
-      <label>Name</label>
+
+      <label>
+        Name
+      </label>
 
       <input
         id="nameInput"
@@ -650,44 +727,72 @@ button{
         maxlength="24"
         placeholder="e.g. Max"
         autocomplete="off">
+
     </div>
 
-    <div id="draftArea" style="display:none">
+
+    <div
+      id="draftArea"
+      style="display:none">
 
       <div class="section-title">
-        <h2>Attributes</h2>
-        <span class="count">1–10</span>
+
+        <h2>
+          Attributes
+        </h2>
+
+        <span class="count">
+          1–10
+        </span>
+
       </div>
 
-      <div id="draftStats" class="stats"></div>
 
-      <p style="color:var(--muted);font-size:11px">
+      <div
+        id="draftStats"
+        class="stats">
+      </div>
+
+
+      <p
+        style="color:var(--muted);font-size:11px">
+
         Stats are permanent after confirmation.
+
       </p>
 
     </div>
+
 
     <button
       id="generateBtn"
       class="btn primary"
       onclick="generateStats()">
+
       GENERATE STATS
+
     </button>
+
 
     <button
       id="rerollBtn"
       class="btn"
       style="display:none"
       onclick="generateStats()">
+
       REROLL STATS
+
     </button>
+
 
     <button
       id="confirmBtn"
       class="btn primary"
       style="display:none"
       onclick="createFighter()">
+
       CONFIRM FIGHTER
+
     </button>
 
   </div>
@@ -695,42 +800,129 @@ button{
 </section>
 
 
+
 <!-- FIGHTERS -->
+
 <section id="fighters" class="screen">
 
-  <div class="section-title">
-    <h2>FIGHTERS</h2>
-    <span id="fighterCount" class="count">0</span>
+  <div class="screen-top">
+
+    <div class="brand">
+      THE <span>SUMMIT</span>
+    </div>
+
+    <button
+      class="logout"
+      onclick="logout()">
+
+      LOG OUT
+
+    </button>
+
   </div>
+
+
+  <div class="section-title">
+
+    <h2>
+      FIGHTERS
+    </h2>
+
+    <span
+      id="fighterCount"
+      class="count">
+
+      0
+
+    </span>
+
+  </div>
+
 
   <div id="fighterList"></div>
 
 </section>
 
 
+
 <!-- FIGHT -->
+
 <section id="fight" class="screen">
 
-  <div class="section-title">
-    <h2>FIGHT</h2>
-    <span class="count">YOU DECIDE</span>
+  <div class="screen-top">
+
+    <div class="brand">
+      THE <span>SUMMIT</span>
+    </div>
+
+    <button
+      class="logout"
+      onclick="logout()">
+
+      LOG OUT
+
+    </button>
+
   </div>
 
-  <button class="btn primary" onclick="randomFight()">
+
+  <div class="section-title">
+
+    <h2>
+      FIGHT
+    </h2>
+
+    <span class="count">
+      YOU DECIDE
+    </span>
+
+  </div>
+
+
+  <button
+    class="btn primary"
+    onclick="randomFight()">
+
     RANDOM FIGHT
+
   </button>
 
-  <button class="btn" onclick="openChoose()">
+
+  <button
+    class="btn"
+    onclick="openChoose()">
+
     CHOOSE FIGHTERS
+
   </button>
+
 
   <div id="fightArea"></div>
 
 </section>
 
 
+
 <!-- RESULT -->
+
 <section id="result" class="screen">
+
+  <div class="screen-top">
+
+    <div class="brand">
+      THE <span>SUMMIT</span>
+    </div>
+
+    <button
+      class="logout"
+      onclick="logout()">
+
+      LOG OUT
+
+    </button>
+
+  </div>
+
 
   <div class="result">
 
@@ -738,57 +930,95 @@ button{
       Fight Result
     </div>
 
-    <div class="winner" id="resultWinner">
+
+    <div
+      class="winner"
+      id="resultWinner">
+
       —
+
     </div>
 
-    <div class="sub" id="resultSub">
+
+    <div
+      class="sub"
+      id="resultSub">
+
       —
+
     </div>
+
 
     <div id="resultCards"></div>
 
-    <button class="btn primary" onclick="go('fight')">
+
+    <button
+      class="btn primary"
+      onclick="go('fight')">
+
       FIGHT AGAIN
+
     </button>
 
-    <button class="btn ghost" onclick="go('fighters')">
+
+    <button
+      class="btn ghost"
+      onclick="go('fighters')">
+
       VIEW RECORDS
+
     </button>
 
   </div>
 
 </section>
 
+
 </main>
 
 
-<!-- BOTTOM NAV -->
-<nav id="nav" class="nav">
+
+<!-- BOTTOM NAVIGATION -->
+
+<nav
+  id="nav"
+  class="nav">
+
 
   <button
     data-nav="create"
     onclick="go('create')">
 
-    <strong>＋</strong>
+    <strong>
+      ＋
+    </strong>
+
     CREATE
 
   </button>
+
 
   <button
     data-nav="fighters"
     onclick="go('fighters')">
 
-    <strong>♙</strong>
+    <strong>
+      ♙
+    </strong>
+
     FIGHTERS
 
   </button>
+
 
   <button
     data-nav="fight"
     onclick="go('fight')">
 
-    <strong>⚔</strong>
+    <strong>
+      ⚔
+    </strong>
+
     FIGHT
 
   </button>
@@ -796,46 +1026,71 @@ button{
 </nav>
 
 
-<div id="toast" class="toast"></div>
+
+<div
+  id="toast"
+  class="toast">
+</div>
+
 
 
 <!-- CHOOSE FIGHTERS MODAL -->
+
 <div
   id="modal"
   class="modal"
   onclick="if(event.target===this)closeChoose()">
 
+
   <div class="sheet">
 
-    <h3>Choose Fighters</h3>
+    <h3>
+      Choose Fighters
+    </h3>
+
 
     <p>
       Select two different fighters.
     </p>
 
+
     <div id="chooseList"></div>
 
-    <button class="btn ghost" onclick="closeChoose()">
+
+    <button
+      class="btn ghost"
+      onclick="closeChoose()">
+
       CANCEL
+
     </button>
 
   </div>
 
 </div>
 
+
 </div>
 
 
+
 <!-- SUPABASE -->
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/dist/umd/supabase.min.js"></script>
 
+
 <script>
+
+
+/* SUPABASE */
 
 const SUPABASE_URL =
   'https://ixpvkbbivzpdcdjhfdwu.supabase.co';
 
+
 const SUPABASE_KEY =
   'sb_publishable_I5Xn1kDyRiElITdT5_LJ2A_I2Ui48ag';
+
 
 const supabase =
   window.supabase.createClient(
@@ -843,8 +1098,11 @@ const supabase =
     SUPABASE_KEY
   );
 
+
 const RECORD_FIGHT_URL =
-  SUPABASE_URL + '/functions/v1/record-fight';
+  SUPABASE_URL +
+  '/functions/v1/record-fight';
+
 
 let user = null;
 let fighters = [];
@@ -852,12 +1110,14 @@ let draft = null;
 let currentFight = null;
 let selected = [];
 
+
 const STAT_NAMES = [
   'STR',
   'INT',
   'DUR',
   'SPD'
 ];
+
 
 const esc = s =>
   String(s).replace(
@@ -871,8 +1131,10 @@ const esc = s =>
     }[m])
   );
 
+
 const rand = () =>
   Math.floor(Math.random() * 10) + 1;
+
 
 
 /* TOAST */
@@ -893,7 +1155,9 @@ function toast(m){
       () => t.classList.remove('show'),
       1800
     );
+
 }
+
 
 
 /* LOGIN ERROR */
@@ -907,15 +1171,14 @@ function authError(m){
 }
 
 
+
 /* SHOW LOGIN */
 
 function showLogin(){
 
-  const login =
-    document.getElementById('login');
-
   const nav =
     document.getElementById('nav');
+
 
   document
     .querySelectorAll('.screen')
@@ -928,9 +1191,9 @@ function showLogin(){
 
     });
 
-  login.classList.add('active');
 
   nav.style.display = 'none';
+
 
   window.scrollTo({
     top:0,
@@ -941,37 +1204,35 @@ function showLogin(){
 }
 
 
+
 /* SHOW APP */
 
 function showApp(){
 
-  const login =
-    document.getElementById('login');
-
   const nav =
     document.getElementById('nav');
 
-  /* Login definitiv deaktivieren */
-  login.classList.remove('active');
 
-  /* Alle anderen Screens ausblenden */
+  /* Login komplett entfernen */
+
   document
-    .querySelectorAll('.screen')
-    .forEach(s => {
+    .getElementById('login')
+    .classList.remove('active');
 
-      if(s.id !== 'login'){
-        s.classList.remove('active');
-      }
 
-    });
+  /* Navigation einschalten */
 
-  /* Navigation definitiv anzeigen */
   nav.style.display = 'grid';
 
-  /* Home öffnen */
-  go('home');
 
-  /* Ganz nach oben */
+  /*
+    Nach erfolgreichem Login
+    direkt zu FIGHTERS.
+  */
+
+  go('fighters');
+
+
   requestAnimationFrame(() => {
 
     window.scrollTo({
@@ -985,9 +1246,24 @@ function showApp(){
 }
 
 
+
 /* NAVIGATION */
 
 function go(id){
+
+  /*
+    Login darf niemals über
+    der App stehen.
+  */
+
+  if(id !== 'login'){
+
+    document
+      .getElementById('login')
+      .classList.remove('active');
+
+  }
+
 
   document
     .querySelectorAll('.screen')
@@ -1002,9 +1278,8 @@ function go(id){
 
 
   /*
-    Ergebnis gehört weiterhin zum
-    Bereich FIGHT, damit FIGHT
-    unten aktiv bleibt.
+    Result gehört weiterhin
+    zum Bereich FIGHT.
   */
 
   const navId =
@@ -1029,9 +1304,11 @@ function go(id){
     renderFighters();
   }
 
+
   if(id === 'fight'){
     renderFightHome();
   }
+
 
   if(id === 'create'){
     resetCreate();
@@ -1047,29 +1324,35 @@ function go(id){
 }
 
 
+
 /* CREATE RESET */
 
 function resetCreate(){
 
   draft = null;
 
+
   document.getElementById(
     'draftArea'
   ).style.display = 'none';
+
 
   document.getElementById(
     'generateBtn'
   ).style.display = 'block';
 
+
   document.getElementById(
     'rerollBtn'
   ).style.display = 'none';
+
 
   document.getElementById(
     'confirmBtn'
   ).style.display = 'none';
 
 }
+
 
 
 /* GENERATE STATS */
@@ -1119,19 +1402,23 @@ function generateStats(){
     'draftArea'
   ).style.display = 'block';
 
+
   document.getElementById(
     'generateBtn'
   ).style.display = 'none';
 
+
   document.getElementById(
     'rerollBtn'
   ).style.display = 'block';
+
 
   document.getElementById(
     'confirmBtn'
   ).style.display = 'block';
 
 }
+
 
 
 /* LOGIN */
@@ -1143,6 +1430,7 @@ async function login(){
       .getElementById('email')
       .value
       .trim();
+
 
   const password =
     document
@@ -1180,6 +1468,7 @@ async function login(){
 }
 
 
+
 /* SIGN UP */
 
 async function signUp(){
@@ -1189,6 +1478,7 @@ async function signUp(){
       .getElementById('email')
       .value
       .trim();
+
 
   const password =
     document
@@ -1237,6 +1527,7 @@ async function signUp(){
 }
 
 
+
 /* LOGOUT */
 
 async function logout(){
@@ -1244,6 +1535,7 @@ async function logout(){
   await supabase.auth.signOut();
 
 }
+
 
 
 /* LOAD FIGHTERS */
@@ -1270,9 +1562,8 @@ async function loadFighters(){
 
   fighters = data || [];
 
-  updateRank();
-
 }
+
 
 
 /* CREATE FIGHTER */
@@ -1338,40 +1629,21 @@ async function createFighter(){
 
   fighters.unshift(data);
 
+
   document.getElementById(
     'nameInput'
   ).value = '';
+
 
   toast(
     name + ' entered the arena.'
   );
 
+
   go('fighters');
 
 }
 
-
-/* RANK */
-
-function updateRank(){
-
-  const top =
-    [...fighters]
-      .sort(
-        (a,b) =>
-          (b.wins - a.wins) ||
-          (a.losses - b.losses)
-      )[0];
-
-
-  document.getElementById(
-    'rank'
-  ).textContent =
-    top && top.wins > 0
-      ? '#1'
-      : '#—';
-
-}
 
 
 /* FIGHTER CARD */
@@ -1395,6 +1667,7 @@ function card(f,owner=true){
           </div>
 
         </div>
+
 
         <div class="record">
 
@@ -1450,13 +1723,18 @@ function card(f,owner=true){
               <button
                 class="smallbtn"
                 onclick="startAgainst('${f.id}')">
+
                 FIGHT
+
               </button>
+
 
               <button
                 class="smallbtn"
                 onclick="deleteFighter('${f.id}')">
+
                 DELETE
+
               </button>
 
             </div>
@@ -1470,6 +1748,7 @@ function card(f,owner=true){
   `;
 
 }
+
 
 
 /* RENDER FIGHTERS */
@@ -1502,17 +1781,17 @@ function renderFighters(){
           <div class="empty">
 
             No fighters yet.
+
             <br>
+
             Create the first contender.
 
           </div>
 
         `;
 
-
-  updateRank();
-
 }
+
 
 
 /* DELETE FIGHTER */
@@ -1561,11 +1840,13 @@ async function deleteFighter(id){
 
   renderFighters();
 
+
   toast(
     'Fighter deleted.'
   );
 
 }
+
 
 
 /* FIGHT HOME */
@@ -1619,6 +1900,7 @@ function renderFightHome(){
 }
 
 
+
 /* RANDOM FIGHT */
 
 function randomFight(){
@@ -1636,6 +1918,7 @@ function randomFight(){
     Math.floor(
       Math.random() * fighters.length
     );
+
 
   let b;
 
@@ -1656,6 +1939,7 @@ function randomFight(){
   );
 
 }
+
 
 
 /* START AGAINST */
@@ -1693,9 +1977,11 @@ function startAgainst(id){
 
   go('fight');
 
+
   startFight(a,b);
 
 }
+
 
 
 /* START FIGHT */
@@ -1756,6 +2042,7 @@ function startFight(a,b){
 }
 
 
+
 /* FIGHTER CHOICE */
 
 function choiceInner(f){
@@ -1766,9 +2053,11 @@ function choiceInner(f){
       ${esc(f.name)}
     </div>
 
+
     <div class="mini-record">
       Human · W ${f.wins} — L ${f.losses}
     </div>
+
 
     <div class="stats">
 
@@ -1800,6 +2089,7 @@ function choiceInner(f){
   `;
 
 }
+
 
 
 /* RESOLVE FIGHT */
@@ -1945,6 +2235,7 @@ async function resolveFight(winId){
 }
 
 
+
 /* CHOOSE FIGHTERS */
 
 function openChoose(){
@@ -1998,6 +2289,7 @@ function openChoose(){
 }
 
 
+
 /* PICK FIGHTER */
 
 function pickChoose(id){
@@ -2039,13 +2331,17 @@ function pickChoose(id){
 
   selected = [];
 
+
   closeChoose();
 
+
   go('fight');
+
 
   startFight(a,b);
 
 }
+
 
 
 /* CLOSE MODAL */
@@ -2061,12 +2357,8 @@ function closeChoose(){
 }
 
 
-/*
-  AUTH STATE
-  ------------------------------
-  Hier wird jetzt ganz bewusst
-  zwischen Login und App gewechselt.
-*/
+
+/* AUTH STATE */
 
 supabase.auth.onAuthStateChange(
   async(_event,session) => {
@@ -2093,9 +2385,8 @@ supabase.auth.onAuthStateChange(
 );
 
 
-/*
-  INITIAL SESSION CHECK
-*/
+
+/* INITIAL SESSION CHECK */
 
 (async()=>{
 
@@ -2108,7 +2399,9 @@ supabase.auth.onAuthStateChange(
     user =
       data.session.user;
 
+
     await loadFighters();
+
 
     showApp();
 
