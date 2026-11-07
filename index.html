@@ -1714,17 +1714,14 @@ function generateStats(){
     return;
   }
 
-
   clearStatRoll();
-
 
   /*
     Die echten Werte werden sofort
     festgelegt.
 
-    Die Animation zeigt danach nur
-    verschiedene Zufallswerte an,
-    bis jeder echte Wert enthüllt wird.
+    Die Animation zeigt nur die
+    Spannung beim Reveal.
   */
 
   draft = {
@@ -1736,22 +1733,27 @@ function generateStats(){
 
   };
 
-
   rollingStats = true;
 
+  /*
+    Alle vier Stats sind von Anfang an
+    sichtbar, aber nur als Platzhalter.
+
+    Immer nur EIN Stat rollt.
+  */
 
   document.getElementById(
     'draftStats'
   ).innerHTML =
 
-    Object.entries(draft)
-      .map(([k]) => `
+    Object.keys(draft)
+      .map(k => `
 
         <div
-          class="stat rolling"
+          class="stat"
           data-stat="${k}">
 
-          <b>${rand()}</b>
+          <b>—</b>
 
           <small>
             ${statLabel(k)}
@@ -1762,74 +1764,21 @@ function generateStats(){
       `)
       .join('');
 
-
   document.getElementById(
     'draftArea'
   ).style.display = 'block';
-
-
-  /*
-    Während des Rollens bleiben
-    beide Aktionen unsichtbar.
-  */
 
   document.getElementById(
     'generateBtn'
   ).style.display = 'none';
 
-
   document.getElementById(
     'rerollBtn'
   ).style.display = 'none';
 
-
   document.getElementById(
     'confirmBtn'
   ).style.display = 'none';
-
-
-  const cards =
-    [
-      ...document.querySelectorAll(
-        '#draftStats .stat'
-      )
-    ];
-
-
-  /*
-    Alle nicht enthüllten Zahlen
-    rollen schnell weiter.
-  */
-
-  statRollTimer =
-    setInterval(() => {
-
-      cards.forEach(card => {
-
-        if(
-          card.classList.contains(
-            'revealed'
-          )
-        ){
-          return;
-        }
-
-
-        const number =
-          card.querySelector('b');
-
-
-        if(number){
-
-          number.textContent =
-            rand();
-
-        }
-
-      });
-
-    },70);
-
 
   const keys = [
     'strength',
@@ -1838,97 +1787,186 @@ function generateStats(){
     'speed'
   ];
 
-
   /*
-    Die echten Werte werden
-    nacheinander enthüllt.
+    Jeder Stat bekommt seinen eigenen
+    Reveal-Moment.
+
+    5 Sekunden pro Stat:
+    schnell rollen -> Spannung ->
+    langsamer werden -> finaler Wert.
   */
 
-  keys.forEach((key,index) => {
+  const rollNext = index => {
 
-    const timer =
-      setTimeout(() => {
+    if(index >= keys.length){
 
-        const card =
-          document.querySelector(
-            `#draftStats .stat[data-stat="${key}"]`
-          );
+      /*
+        Kurze Pause nach dem letzten
+        Stat, bevor die Aktionen erscheinen.
+      */
 
-
-        if(!card){
-          return;
-        }
-
-
-        const number =
-          card.querySelector('b');
-
-
-        if(number){
-
-          number.textContent =
-            draft[key];
-
-        }
-
-
-        card.classList.remove(
-          'rolling'
-        );
-
-
-        /*
-          Force reflow, damit die
-          Reveal-Animation bei jedem
-          Reroll sicher neu startet.
-        */
-
-        void card.offsetWidth;
-
-
-        card.classList.add(
-          'revealed'
-        );
-
-
-        /*
-          Nach dem letzten Stat ist
-          die Animation komplett fertig.
-        */
-
-        if(index === keys.length - 1){
-
-          if(statRollTimer){
-
-            clearInterval(
-              statRollTimer
-            );
-
-            statRollTimer = null;
-
-          }
-
+      const finishTimer =
+        setTimeout(() => {
 
           rollingStats = false;
-
 
           document.getElementById(
             'rerollBtn'
           ).style.display = 'block';
 
-
           document.getElementById(
             'confirmBtn'
           ).style.display = 'block';
 
+        },700);
+
+      statRevealTimers.push(
+        finishTimer
+      );
+
+      return;
+    }
+
+    const key = keys[index];
+
+    const card =
+      document.querySelector(
+        `#draftStats .stat[data-stat="${key}"]`
+      );
+
+    if(!card){
+      rollingStats = false;
+      return;
+    }
+
+    const number =
+      card.querySelector('b');
+
+    /*
+      Nur dieser eine Stat wird aktiv.
+    */
+
+    card.classList.add('rolling');
+
+    number.textContent = rand();
+
+    /*
+      SCHNELLER ROLL
+    */
+
+    statRollTimer =
+      setInterval(() => {
+
+        number.textContent = rand();
+
+      },70);
+
+    /*
+      Nach 3,5 Sekunden wird der Roll
+      deutlich langsamer.
+    */
+
+    const slowTimer =
+      setTimeout(() => {
+
+        if(statRollTimer){
+
+          clearInterval(
+            statRollTimer
+          );
+
+          statRollTimer = null;
+
         }
 
-      },650 + index * 170);
+        statRollTimer =
+          setInterval(() => {
 
+            number.textContent = rand();
 
-    statRevealTimers.push(timer);
+          },150);
 
-  });
+      },3500);
+
+    statRevealTimers.push(
+      slowTimer
+    );
+
+    /*
+      Nach 5 Sekunden:
+      echter Wert -> Glow -> nächster Stat.
+    */
+
+    const revealTimer =
+      setTimeout(() => {
+
+        if(statRollTimer){
+
+          clearInterval(
+            statRollTimer
+          );
+
+          statRollTimer = null;
+
+        }
+
+        number.textContent =
+          draft[key];
+
+        card.classList.remove(
+          'rolling'
+        );
+
+        /*
+          Force reflow, damit die
+          Reveal-Animation sicher startet.
+        */
+
+        void card.offsetWidth;
+
+        card.classList.add(
+          'revealed'
+        );
+
+        /*
+          Kurzer Moment, damit der
+          finale Wert wirken kann.
+        */
+
+        const nextTimer =
+          setTimeout(() => {
+
+            rollNext(index + 1);
+
+          },450);
+
+        statRevealTimers.push(
+          nextTimer
+        );
+
+      },5000);
+
+    statRevealTimers.push(
+      revealTimer
+    );
+
+  };
+
+  /*
+    Kleine Initialpause,
+    danach startet STR.
+  */
+
+  const startTimer =
+    setTimeout(() => {
+
+      rollNext(0);
+
+    },300);
+
+  statRevealTimers.push(
+    startTimer
+  );
 
 }
 
