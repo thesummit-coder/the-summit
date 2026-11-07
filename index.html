@@ -280,6 +280,196 @@ button{
 }
 
 
+/* CREATE */
+
+.create-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  margin:6px 0 22px
+}
+
+
+.create-heading{
+  flex:1
+}
+
+
+.create-heading h2{
+  font-size:36px;
+  line-height:.92;
+  letter-spacing:-1.8px;
+  margin:7px 0 10px;
+  font-weight:950
+}
+
+
+.create-heading h2 span{
+  color:var(--blue)
+}
+
+
+.create-heading p{
+  margin:0;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.45;
+  max-width:250px
+}
+
+
+.create-logout{
+  flex-shrink:0;
+  margin-top:1px
+}
+
+
+.create-card{
+  position:relative;
+  overflow:hidden;
+  padding:18px;
+  border-color:#28527e;
+  box-shadow:
+    0 18px 45px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.025)
+}
+
+
+.create-card:before{
+  content:"";
+  position:absolute;
+  top:-90px;
+  right:-80px;
+  width:190px;
+  height:190px;
+  border-radius:50%;
+  background:rgba(63,145,255,.10);
+  filter:blur(5px);
+  pointer-events:none
+}
+
+
+.create-card > *{
+  position:relative;
+  z-index:1
+}
+
+
+.create-label{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:8px
+}
+
+
+.create-label span:first-child{
+  color:var(--text);
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:1.5px;
+  text-transform:uppercase
+}
+
+
+.create-label span:last-child{
+  color:var(--blue2);
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:1px;
+  text-transform:uppercase
+}
+
+
+.create-name{
+  font-size:18px;
+  font-weight:800;
+  letter-spacing:.2px
+}
+
+
+.create-name::placeholder{
+  color:#607895
+}
+
+
+.create-divider{
+  height:1px;
+  background:linear-gradient(
+    90deg,
+    transparent,
+    #23466e,
+    transparent
+  );
+  margin:22px 0
+}
+
+
+.attribute-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  margin-bottom:10px
+}
+
+
+.attribute-header h3{
+  margin:0;
+  font-size:15px;
+  letter-spacing:.3px
+}
+
+
+.attribute-header span{
+  color:var(--muted);
+  font-size:10px;
+  letter-spacing:1px;
+  text-transform:uppercase
+}
+
+
+.draft-note{
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.45;
+  margin:12px 2px 0
+}
+
+
+.create-card .stats{
+  margin-top:12px
+}
+
+
+.create-card .stat{
+  background:#081528;
+  border-color:#1c3c5d;
+  padding:13px 4px
+}
+
+
+.create-card .stat b{
+  font-size:24px
+}
+
+
+.create-card .stat small{
+  font-size:9px;
+  font-weight:800
+}
+
+
+.create-card .btn{
+  margin-top:12px
+}
+
+
+.generate-button{
+  margin-top:4px !important
+}
+
+
 /* FIGHTERS */
 
 .fighter-head{
@@ -687,14 +877,29 @@ button{
 
 <section id="create" class="screen">
 
-  <div class="screen-top">
+  <div class="create-header">
 
-    <div class="brand">
-      THE <span>SUMMIT</span>
+    <div class="create-heading">
+
+      <div class="eyebrow">
+        THE SUMMIT
+      </div>
+
+      <h2>
+        CREATE YOUR<br>
+        <span>FIGHTER</span>
+      </h2>
+
+      <p>
+        Build your competitor.<br>
+        Enter the Summit.
+      </p>
+
     </div>
 
+
     <button
-      class="logout"
+      class="logout create-logout"
       onclick="logout()">
 
       LOG OUT
@@ -704,44 +909,43 @@ button{
   </div>
 
 
-  <div class="section-title">
+  <div class="card create-card">
 
-    <h2>
-      CREATE FIGHTER
-    </h2>
+    <div class="create-label">
 
-  </div>
+      <span>
+        Fighter Name
+      </span>
 
-
-  <div class="card">
-
-    <div class="field">
-
-      <label>
-        Name
-      </label>
-
-      <input
-        id="nameInput"
-        class="input"
-        maxlength="24"
-        placeholder="e.g. Max"
-        autocomplete="off">
+      <span>
+        Required
+      </span>
 
     </div>
+
+
+    <input
+      id="nameInput"
+      class="input create-name"
+      maxlength="24"
+      placeholder="Enter fighter name"
+      autocomplete="off">
+
+
+    <div class="create-divider"></div>
 
 
     <div
       id="draftArea"
       style="display:none">
 
-      <div class="section-title">
+      <div class="attribute-header">
 
-        <h2>
-          Attributes
-        </h2>
+        <h3>
+          Fighter Attributes
+        </h3>
 
-        <span class="count">
+        <span>
           1–10
         </span>
 
@@ -754,8 +958,7 @@ button{
       </div>
 
 
-      <p
-        style="color:var(--muted);font-size:11px">
+      <p class="draft-note">
 
         Stats are permanent after confirmation.
 
@@ -766,7 +969,7 @@ button{
 
     <button
       id="generateBtn"
-      class="btn primary"
+      class="btn primary generate-button"
       onclick="generateStats()">
 
       GENERATE STATS
