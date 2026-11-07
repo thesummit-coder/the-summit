@@ -1716,14 +1716,6 @@ function generateStats(){
 
   clearStatRoll();
 
-  /*
-    Die echten Werte werden sofort
-    festgelegt.
-
-    Die Animation zeigt nur die
-    Spannung beim Reveal.
-  */
-
   draft = {
 
     strength:rand(),
@@ -1734,13 +1726,6 @@ function generateStats(){
   };
 
   rollingStats = true;
-
-  /*
-    Alle vier Stats sind von Anfang an
-    sichtbar, aber nur als Platzhalter.
-
-    Immer nur EIN Stat rollt.
-  */
 
   document.getElementById(
     'draftStats'
@@ -1780,6 +1765,7 @@ function generateStats(){
     'confirmBtn'
   ).style.display = 'none';
 
+
   const keys = [
     'strength',
     'intelligence',
@@ -1787,23 +1773,14 @@ function generateStats(){
     'speed'
   ];
 
-  /*
-    Jeder Stat bekommt seinen eigenen
-    Reveal-Moment.
 
-    5 Sekunden pro Stat:
-    schnell rollen -> Spannung ->
-    langsamer werden -> finaler Wert.
+  /*
+    EIN STAT NACH DEM ANDEREN
   */
 
   const rollNext = index => {
 
     if(index >= keys.length){
-
-      /*
-        Kurze Pause nach dem letzten
-        Stat, bevor die Aktionen erscheinen.
-      */
 
       const finishTimer =
         setTimeout(() => {
@@ -1827,6 +1804,7 @@ function generateStats(){
       return;
     }
 
+
     const key = keys[index];
 
     const card =
@@ -1835,23 +1813,32 @@ function generateStats(){
       );
 
     if(!card){
+
       rollingStats = false;
       return;
+
     }
+
 
     const number =
       card.querySelector('b');
 
-    /*
-      Nur dieser eine Stat wird aktiv.
-    */
 
     card.classList.add('rolling');
 
-    number.textContent = rand();
 
     /*
-      SCHNELLER ROLL
+      STARTWERT
+    */
+
+    number.textContent = rand();
+
+
+    /*
+      =================================
+      PHASE 1
+      SCHNELLER SPIN
+      =================================
     */
 
     statRollTimer =
@@ -1859,11 +1846,17 @@ function generateStats(){
 
         number.textContent = rand();
 
-      },70);
+      },65);
+
 
     /*
-      Nach 3,5 Sekunden wird der Roll
-      deutlich langsamer.
+      =================================
+      PHASE 2
+      LANGSAMER
+      =================================
+
+      Nach 2,8 Sekunden wird der
+      Spin spürbar langsamer.
     */
 
     const slowTimer =
@@ -1884,17 +1877,62 @@ function generateStats(){
 
             number.textContent = rand();
 
-          },150);
+          },180);
 
-      },3500);
+      },2800);
+
 
     statRevealTimers.push(
       slowTimer
     );
 
+
     /*
-      Nach 5 Sekunden:
-      echter Wert -> Glow -> nächster Stat.
+      =================================
+      PHASE 3
+      NOCH LANGSAMER
+      =================================
+
+      Jetzt beginnt die eigentliche
+      Spannung.
+    */
+
+    const verySlowTimer =
+      setTimeout(() => {
+
+        if(statRollTimer){
+
+          clearInterval(
+            statRollTimer
+          );
+
+          statRollTimer = null;
+
+        }
+
+        statRollTimer =
+          setInterval(() => {
+
+            number.textContent = rand();
+
+          },360);
+
+      },3800);
+
+
+    statRevealTimers.push(
+      verySlowTimer
+    );
+
+
+    /*
+      =================================
+      PHASE 4
+      FINALER REVEAL
+      =================================
+
+      Nach 5 Sekunden kommt der
+      echte Wert.
     */
 
     const revealTimer =
@@ -1910,27 +1948,35 @@ function generateStats(){
 
         }
 
+
+        /*
+          Echter Wert
+        */
+
         number.textContent =
           draft[key];
+
 
         card.classList.remove(
           'rolling'
         );
 
+
         /*
-          Force reflow, damit die
-          Reveal-Animation sicher startet.
+          Animation sicher neu starten
         */
 
         void card.offsetWidth;
+
 
         card.classList.add(
           'revealed'
         );
 
+
         /*
-          Kurzer Moment, damit der
-          finale Wert wirken kann.
+          Kurzer Moment für den
+          finalen Wert.
         */
 
         const nextTimer =
@@ -1938,7 +1984,8 @@ function generateStats(){
 
             rollNext(index + 1);
 
-          },450);
+          },550);
+
 
         statRevealTimers.push(
           nextTimer
@@ -1946,15 +1993,16 @@ function generateStats(){
 
       },5000);
 
+
     statRevealTimers.push(
       revealTimer
     );
 
   };
 
+
   /*
-    Kleine Initialpause,
-    danach startet STR.
+    Kleine Pause bevor STR startet
   */
 
   const startTimer =
@@ -1963,6 +2011,7 @@ function generateStats(){
       rollNext(0);
 
     },300);
+
 
   statRevealTimers.push(
     startTimer
