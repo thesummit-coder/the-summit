@@ -445,18 +445,132 @@ button{
 .create-card .stat{
   background:#081528;
   border-color:#1c3c5d;
-  padding:13px 4px
+  padding:13px 4px;
+  position:relative;
+  overflow:hidden;
+  transition:
+    border-color .22s ease,
+    box-shadow .22s ease,
+    transform .22s ease
 }
 
 
 .create-card .stat b{
-  font-size:24px
+  font-size:24px;
+  position:relative;
+  z-index:2;
+  transition:
+    color .12s ease,
+    transform .12s ease,
+    opacity .12s ease
 }
 
 
 .create-card .stat small{
   font-size:9px;
-  font-weight:800
+  font-weight:800;
+  position:relative;
+  z-index:2
+}
+
+
+/* STAT ROLL ANIMATION */
+
+.create-card .stat.rolling{
+  border-color:#28527e;
+  box-shadow:
+    inset 0 0 18px rgba(63,145,255,.06);
+}
+
+
+.create-card .stat.rolling b{
+  color:var(--blue2);
+  animation:statRolling .09s linear infinite
+}
+
+
+.create-card .stat.rolling:after{
+  content:"";
+  position:absolute;
+  left:-30%;
+  top:0;
+  width:60%;
+  height:100%;
+  background:linear-gradient(
+    90deg,
+    transparent,
+    rgba(63,145,255,.10),
+    transparent
+  );
+  animation:statScan .45s linear infinite
+}
+
+
+.create-card .stat.revealed{
+  border-color:var(--blue);
+  box-shadow:
+    0 0 0 1px rgba(63,145,255,.10),
+    0 0 22px rgba(63,145,255,.14),
+    inset 0 0 18px rgba(63,145,255,.06);
+  animation:statReveal .32s ease-out
+}
+
+
+.create-card .stat.revealed b{
+  color:#ffffff;
+}
+
+
+@keyframes statRolling{
+
+  0%{
+    transform:translateY(-2px);
+    opacity:.55
+  }
+
+  50%{
+    transform:translateY(2px);
+    opacity:1
+  }
+
+  100%{
+    transform:translateY(-2px);
+    opacity:.55
+  }
+
+}
+
+
+@keyframes statScan{
+
+  from{
+    transform:translateX(0)
+  }
+
+  to{
+    transform:translateX(260%)
+  }
+
+}
+
+
+@keyframes statReveal{
+
+  0%{
+    transform:scale(.86);
+    opacity:.45
+  }
+
+  55%{
+    transform:scale(1.08);
+    opacity:1
+  }
+
+  100%{
+    transform:scale(1);
+    opacity:1
+  }
+
 }
 
 
@@ -1314,6 +1428,13 @@ let currentFight = null;
 let selected = [];
 
 
+/* STAT ROLL STATE */
+
+let rollingStats = false;
+let statRollTimer = null;
+let statRevealTimers = [];
+
+
 const STAT_NAMES = [
   'STR',
   'INT',
@@ -1416,22 +1537,13 @@ function showApp(){
     document.getElementById('nav');
 
 
-  /* Login komplett entfernen */
-
   document
     .getElementById('login')
     .classList.remove('active');
 
 
-  /* Navigation einschalten */
-
   nav.style.display = 'grid';
 
-
-  /*
-    Nach erfolgreichem Login
-    direkt zu FIGHTERS.
-  */
 
   go('fighters');
 
@@ -1454,11 +1566,6 @@ function showApp(){
 
 function go(id){
 
-  /*
-    Login darf niemals über
-    der App stehen.
-  */
-
   if(id !== 'login'){
 
     document
@@ -1479,11 +1586,6 @@ function go(id){
 
     });
 
-
-  /*
-    Result gehört weiterhin
-    zum Bereich FIGHT.
-  */
 
   const navId =
     id === 'result'
@@ -1528,9 +1630,39 @@ function go(id){
 
 
 
+/* CLEAR STAT ROLL */
+
+function clearStatRoll(){
+
+  if(statRollTimer){
+
+    clearInterval(
+      statRollTimer
+    );
+
+    statRollTimer = null;
+
+  }
+
+
+  statRevealTimers.forEach(
+    timer => clearTimeout(timer)
+  );
+
+
+  statRevealTimers = [];
+
+  rollingStats = false;
+
+}
+
+
+
 /* CREATE RESET */
 
 function resetCreate(){
+
+  clearStatRoll();
 
   draft = null;
 
@@ -1558,9 +1690,42 @@ function resetCreate(){
 
 
 
+/* STAT LABEL */
+
+function statLabel(key){
+
+  return key === 'strength'
+    ? 'STR'
+    : key === 'intelligence'
+    ? 'INT'
+    : key === 'durability'
+    ? 'DUR'
+    : 'SPD';
+
+}
+
+
+
 /* GENERATE STATS */
 
 function generateStats(){
+
+  if(rollingStats){
+    return;
+  }
+
+
+  clearStatRoll();
+
+
+  /*
+    Die echten Werte werden sofort
+    festgelegt.
+
+    Die Animation zeigt danach nur
+    verschiedene Zufallswerte an,
+    bis jeder echte Wert enthüllt wird.
+  */
 
   draft = {
 
@@ -1572,27 +1737,24 @@ function generateStats(){
   };
 
 
+  rollingStats = true;
+
+
   document.getElementById(
     'draftStats'
   ).innerHTML =
 
     Object.entries(draft)
-      .map(([k,v]) => `
+      .map(([k]) => `
 
-        <div class="stat">
+        <div
+          class="stat rolling"
+          data-stat="${k}">
 
-          <b>${v}</b>
+          <b>${rand()}</b>
 
           <small>
-            ${
-              k === 'strength'
-                ? 'STR'
-                : k === 'intelligence'
-                ? 'INT'
-                : k === 'durability'
-                ? 'DUR'
-                : 'SPD'
-            }
+            ${statLabel(k)}
           </small>
 
         </div>
@@ -1606,6 +1768,11 @@ function generateStats(){
   ).style.display = 'block';
 
 
+  /*
+    Während des Rollens bleiben
+    beide Aktionen unsichtbar.
+  */
+
   document.getElementById(
     'generateBtn'
   ).style.display = 'none';
@@ -1613,12 +1780,155 @@ function generateStats(){
 
   document.getElementById(
     'rerollBtn'
-  ).style.display = 'block';
+  ).style.display = 'none';
 
 
   document.getElementById(
     'confirmBtn'
-  ).style.display = 'block';
+  ).style.display = 'none';
+
+
+  const cards =
+    [
+      ...document.querySelectorAll(
+        '#draftStats .stat'
+      )
+    ];
+
+
+  /*
+    Alle nicht enthüllten Zahlen
+    rollen schnell weiter.
+  */
+
+  statRollTimer =
+    setInterval(() => {
+
+      cards.forEach(card => {
+
+        if(
+          card.classList.contains(
+            'revealed'
+          )
+        ){
+          return;
+        }
+
+
+        const number =
+          card.querySelector('b');
+
+
+        if(number){
+
+          number.textContent =
+            rand();
+
+        }
+
+      });
+
+    },70);
+
+
+  const keys = [
+    'strength',
+    'intelligence',
+    'durability',
+    'speed'
+  ];
+
+
+  /*
+    Die echten Werte werden
+    nacheinander enthüllt.
+  */
+
+  keys.forEach((key,index) => {
+
+    const timer =
+      setTimeout(() => {
+
+        const card =
+          document.querySelector(
+            `#draftStats .stat[data-stat="${key}"]`
+          );
+
+
+        if(!card){
+          return;
+        }
+
+
+        const number =
+          card.querySelector('b');
+
+
+        if(number){
+
+          number.textContent =
+            draft[key];
+
+        }
+
+
+        card.classList.remove(
+          'rolling'
+        );
+
+
+        /*
+          Force reflow, damit die
+          Reveal-Animation bei jedem
+          Reroll sicher neu startet.
+        */
+
+        void card.offsetWidth;
+
+
+        card.classList.add(
+          'revealed'
+        );
+
+
+        /*
+          Nach dem letzten Stat ist
+          die Animation komplett fertig.
+        */
+
+        if(index === keys.length - 1){
+
+          if(statRollTimer){
+
+            clearInterval(
+              statRollTimer
+            );
+
+            statRollTimer = null;
+
+          }
+
+
+          rollingStats = false;
+
+
+          document.getElementById(
+            'rerollBtn'
+          ).style.display = 'block';
+
+
+          document.getElementById(
+            'confirmBtn'
+          ).style.display = 'block';
+
+        }
+
+      },650 + index * 170);
+
+
+    statRevealTimers.push(timer);
+
+  });
 
 }
 
