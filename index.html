@@ -2361,22 +2361,29 @@ function closeChoose(){
 /* AUTH STATE */
 
 supabase.auth.onAuthStateChange(
-  async(_event,session) => {
+  (_event,session) => {
 
-    user =
-      session?.user || null;
-
+    user = session?.user || null;
 
     if(user){
 
-      await loadFighters();
-
       showApp();
+
+      setTimeout(async() => {
+        await loadFighters();
+
+        if(
+          document
+            .querySelector('.screen.active')
+            ?.id === 'fighters'
+        ){
+          renderFighters();
+        }
+      },0);
 
     }else{
 
       fighters = [];
-
       showLogin();
 
     }
