@@ -474,115 +474,195 @@ button{
 }
 
 
-/* STAT ROLL ANIMATION */
+/* STAT WHEEL ANIMATION */
 
-.create-card .stat.rolling{
-  border-color:#28527e;
-  box-shadow:
-    inset 0 0 18px rgba(63,145,255,.06);
+.create-card .stat{
+  position:relative;
+  overflow:hidden;
 }
 
-
-.create-card .stat.rolling b{
-  color:var(--blue2);
-  animation:statRolling .09s linear infinite
+.stat-wheel{
+  position:relative;
+  height:42px;
+  overflow:hidden;
+  margin:0 auto 4px;
+  border-radius:10px;
+  background:linear-gradient(
+    180deg,
+    rgba(4,12,24,.35),
+    rgba(16,35,61,.9),
+    rgba(4,12,24,.35)
+  );
 }
 
-
-.create-card .stat.rolling:after{
+.stat-wheel:before,
+.stat-wheel:after{
   content:"";
   position:absolute;
-  left:-30%;
+  left:0;
+  right:0;
+  height:11px;
+  z-index:3;
+  pointer-events:none;
+}
+
+.stat-wheel:before{
   top:0;
-  width:60%;
-  height:100%;
   background:linear-gradient(
-    90deg,
-    transparent,
-    rgba(63,145,255,.10),
+    180deg,
+    #081528,
     transparent
   );
-  animation:statScan .45s linear infinite
 }
 
+.stat-wheel:after{
+  bottom:0;
+  background:linear-gradient(
+    0deg,
+    #081528,
+    transparent
+  );
+}
 
-.create-card .stat.revealed{
-  border-color:var(--blue);
+.wheel-pointer{
+  position:absolute;
+  left:4px;
+  right:4px;
+  top:50%;
+  height:32px;
+  transform:translateY(-50%);
+  border-top:1px solid rgba(143,194,255,.25);
+  border-bottom:1px solid rgba(143,194,255,.25);
+  z-index:4;
+  pointer-events:none;
+}
+
+.wheel-strip{
+  position:absolute;
+  top:50%;
+  left:0;
+  width:100%;
+  transform:translateY(-50%);
+  transition:transform 1.15s cubic-bezier(.12,.82,.2,1);
+  will-change:transform;
+}
+
+.wheel-number{
+  height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+  line-height:34px;
+  font-weight:950;
+  color:var(--blue2);
+}
+
+.stat.rolling{
+  border-color:#3f91ff !important;
   box-shadow:
     0 0 0 1px rgba(63,145,255,.10),
-    0 0 22px rgba(63,145,255,.14),
-    inset 0 0 18px rgba(63,145,255,.06);
-  animation:statReveal .32s ease-out
+    0 0 25px rgba(63,145,255,.14),
+    inset 0 0 22px rgba(63,145,255,.07);
+  transform:translateY(-1px);
 }
 
-
-.create-card .stat.revealed b{
-  color:#ffffff;
+.stat.rolling .wheel-strip{
+  transition:none;
 }
 
+.stat.locked{
+  border-color:var(--blue) !important;
+  box-shadow:
+    0 0 0 1px rgba(63,145,255,.16),
+    0 0 30px rgba(63,145,255,.22),
+    inset 0 0 24px rgba(63,145,255,.08);
+  animation:wheelLock .45s ease-out;
+}
 
-@keyframes statRolling{
+.stat.locked .wheel-number{
+  color:#fff;
+}
 
+@keyframes wheelLock{
   0%{
-    transform:translateY(-2px);
-    opacity:.55
+    transform:scale(.9);
   }
-
-  50%{
-    transform:translateY(2px);
-    opacity:1
-  }
-
-  100%{
-    transform:translateY(-2px);
-    opacity:.55
-  }
-
-}
-
-
-@keyframes statScan{
-
-  from{
-    transform:translateX(0)
-  }
-
-  to{
-    transform:translateX(260%)
-  }
-
-}
-
-
-@keyframes statReveal{
-
-  0%{
-    transform:scale(.86);
-    opacity:.45
-  }
-
   55%{
-    transform:scale(1.08);
-    opacity:1
+    transform:scale(1.06);
   }
-
   100%{
     transform:scale(1);
-    opacity:1
   }
-
 }
 
+/* FINAL FIGHTER REVEAL */
 
-.create-card .btn{
-  margin-top:12px
+.reveal-card{
+  margin-top:14px;
+  padding:15px;
+  border:1px solid #28527e;
+  border-radius:16px;
+  background:
+    linear-gradient(145deg,#102943,#09182b);
+  box-shadow:
+    0 14px 35px rgba(0,0,0,.22),
+    0 0 28px rgba(63,145,255,.08);
+  animation:revealIn .45s ease-out;
 }
 
-
-.generate-button{
-  margin-top:4px !important
+.reveal-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:5px;
 }
 
+.reveal-kicker{
+  color:var(--blue2);
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+}
+
+.reveal-ready{
+  color:var(--good);
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:1px;
+}
+
+.reveal-name{
+  font-size:22px;
+  font-weight:950;
+  letter-spacing:-.3px;
+}
+
+.reveal-card .stats{
+  margin-top:11px;
+}
+
+.reveal-card .stat{
+  background:#081528;
+  border-color:#1c3c5d;
+}
+
+.reveal-card .stat b{
+  font-size:23px;
+}
+
+@keyframes revealIn{
+  from{
+    opacity:0;
+    transform:translateY(8px) scale(.98);
+  }
+  to{
+    opacity:1;
+    transform:none;
+  }
+}
 
 /* FIGHTERS */
 
@@ -1071,6 +1151,8 @@ button{
         class="stats">
       </div>
 
+
+      <div id="revealCard" class="reveal-card" style="display:none"></div>
 
       <p class="draft-note">
 
@@ -1686,6 +1768,14 @@ function resetCreate(){
     'confirmBtn'
   ).style.display = 'none';
 
+  const revealCard =
+    document.getElementById('revealCard');
+
+  if(revealCard){
+    revealCard.style.display = 'none';
+    revealCard.innerHTML = '';
+  }
+
 }
 
 
@@ -1717,12 +1807,10 @@ function generateStats(){
   clearStatRoll();
 
   draft = {
-
     strength:rand(),
     intelligence:rand(),
     durability:rand(),
     speed:rand()
-
   };
 
   rollingStats = true;
@@ -1730,23 +1818,41 @@ function generateStats(){
   document.getElementById(
     'draftStats'
   ).innerHTML =
-
     Object.keys(draft)
-      .map(k => `
+      .map(k => {
 
-        <div
-          class="stat"
-          data-stat="${k}">
+        const numbers = Array.from(
+          {length:80},
+          (_,i) => (i % 10) + 1
+        );
 
-          <b>—</b>
+        return `
+          <div
+            class="stat"
+            data-stat="${k}">
 
-          <small>
-            ${statLabel(k)}
-          </small>
+            <div class="stat-wheel">
+              <div class="wheel-pointer"></div>
 
-        </div>
+              <div
+                class="wheel-strip"
+                data-wheel="${k}">
 
-      `)
+                ${numbers.map(n => `
+                  <div class="wheel-number">${n}</div>
+                `).join('')}
+
+              </div>
+            </div>
+
+            <small>
+              ${statLabel(k)}
+            </small>
+
+          </div>
+        `;
+
+      })
       .join('');
 
   document.getElementById(
@@ -1765,6 +1871,13 @@ function generateStats(){
     'confirmBtn'
   ).style.display = 'none';
 
+  const revealCard =
+    document.getElementById('revealCard');
+
+  if(revealCard){
+    revealCard.style.display = 'none';
+    revealCard.innerHTML = '';
+  }
 
   const keys = [
     'strength',
@@ -1773,37 +1886,94 @@ function generateStats(){
     'speed'
   ];
 
-
-  /*
-    EIN STAT NACH DEM ANDEREN
-  */
-
   const rollNext = index => {
 
     if(index >= keys.length){
 
-      const finishTimer =
+      const revealTimer =
         setTimeout(() => {
 
-          rollingStats = false;
+          const reveal =
+            document.getElementById('revealCard');
 
-          document.getElementById(
-            'rerollBtn'
-          ).style.display = 'block';
+          const name =
+            document
+              .getElementById('nameInput')
+              .value
+              .trim() || 'Unnamed Fighter';
 
-          document.getElementById(
-            'confirmBtn'
-          ).style.display = 'block';
+          if(reveal){
 
-        },700);
+            reveal.innerHTML = `
+              <div class="reveal-top">
+                <span class="reveal-kicker">
+                  Fighter Locked
+                </span>
+
+                <span class="reveal-ready">
+                  READY
+                </span>
+              </div>
+
+              <div class="reveal-name">
+                ${esc(name)}
+              </div>
+
+              <div class="stats">
+
+                ${[
+                  draft.strength,
+                  draft.intelligence,
+                  draft.durability,
+                  draft.speed
+                ].map((v,i) => `
+                  <div class="stat">
+                    <b>${v}</b>
+                    <small>${STAT_NAMES[i]}</small>
+                  </div>
+                `).join('')}
+
+              </div>
+            `;
+
+            reveal.style.display = 'block';
+
+            requestAnimationFrame(() => {
+              reveal.scrollIntoView({
+                behavior:'smooth',
+                block:'nearest'
+              });
+            });
+
+          }
+
+          const finishTimer =
+            setTimeout(() => {
+
+              rollingStats = false;
+
+              document.getElementById(
+                'rerollBtn'
+              ).style.display = 'block';
+
+              document.getElementById(
+                'confirmBtn'
+              ).style.display = 'block';
+
+            },650);
+
+          statRevealTimers.push(
+            finishTimer
+          );
+
+        },250);
 
       statRevealTimers.push(
-        finishTimer
+        revealTimer
       );
 
       return;
     }
-
 
     const key = keys[index];
 
@@ -1813,213 +1983,112 @@ function generateStats(){
       );
 
     if(!card){
-
       rollingStats = false;
       return;
-
     }
 
+    const strip =
+      card.querySelector('.wheel-strip');
 
-    const number =
-      card.querySelector('b');
-
+    if(!strip){
+      rollingStats = false;
+      return;
+    }
 
     card.classList.add('rolling');
 
+    const target =
+      draft[key];
 
-    /*
-      STARTWERT
-    */
+    const targetIndex =
+      58 + (target - 1);
 
-    number.textContent = rand();
+    strip.style.transition = 'none';
+    strip.style.transform =
+      'translateY(calc(-50% + 0px))';
 
+    let value = rand();
 
-    /*
-      =================================
-      PHASE 1
-      SCHNELLER SPIN
-      =================================
-    */
-
-    statRollTimer =
+    const spinTimer =
       setInterval(() => {
 
-        number.textContent = rand();
+        value = rand();
 
-      },65);
+        const current =
+          card.querySelector('.wheel-number');
 
+        if(current){
+          /* visual spin is driven by the strip below */
+        }
 
-    /*
-      =================================
-      PHASE 2
-      LANGSAMER
-      =================================
+      },72);
 
-      Nach 2,8 Sekunden wird der
-      Spin spürbar langsamer.
-    */
+    statRollTimer = spinTimer;
 
     const slowTimer =
       setTimeout(() => {
 
-        if(statRollTimer){
-
-          clearInterval(
-            statRollTimer
-          );
-
+        if(statRollTimer === spinTimer){
+          clearInterval(spinTimer);
           statRollTimer = null;
-
         }
 
-        statRollTimer =
+        const slow =
           setInterval(() => {
+            value = rand();
+          },145);
 
-            number.textContent = rand();
+        statRollTimer = slow;
 
-          },180);
+        const verySlowTimer =
+          setTimeout(() => {
+
+            if(statRollTimer === slow){
+              clearInterval(slow);
+              statRollTimer = null;
+            }
+
+            strip.style.transition =
+              'transform 1.15s cubic-bezier(.12,.82,.2,1)';
+
+            strip.style.transform =
+              `translateY(calc(-50% - ${targetIndex * 34 - 17}px))`;
+
+            const lockTimer =
+              setTimeout(() => {
+
+                card.classList.remove('rolling');
+                card.classList.add('locked');
+
+                const nextTimer =
+                  setTimeout(() => {
+                    rollNext(index + 1);
+                  },700);
+
+                statRevealTimers.push(nextTimer);
+
+              },1150);
+
+            statRevealTimers.push(lockTimer);
+
+          },1200);
+
+        statRevealTimers.push(verySlowTimer);
 
       },2800);
 
-
-    statRevealTimers.push(
-      slowTimer
-    );
-
-
-    /*
-      =================================
-      PHASE 3
-      NOCH LANGSAMER
-      =================================
-
-      Jetzt beginnt die eigentliche
-      Spannung.
-    */
-
-    const verySlowTimer =
-      setTimeout(() => {
-
-        if(statRollTimer){
-
-          clearInterval(
-            statRollTimer
-          );
-
-          statRollTimer = null;
-
-        }
-
-        statRollTimer =
-          setInterval(() => {
-
-            number.textContent = rand();
-
-          },360);
-
-      },3800);
-
-
-    statRevealTimers.push(
-      verySlowTimer
-    );
-
-
-    /*
-      =================================
-      PHASE 4
-      FINALER REVEAL
-      =================================
-
-      Nach 5 Sekunden kommt der
-      echte Wert.
-    */
-
-    const revealTimer =
-      setTimeout(() => {
-
-        if(statRollTimer){
-
-          clearInterval(
-            statRollTimer
-          );
-
-          statRollTimer = null;
-
-        }
-
-
-        /*
-          Echter Wert
-        */
-
-        number.textContent =
-          draft[key];
-
-
-        card.classList.remove(
-          'rolling'
-        );
-
-
-        /*
-          Animation sicher neu starten
-        */
-
-        void card.offsetWidth;
-
-
-        card.classList.add(
-          'revealed'
-        );
-
-
-        /*
-          Kurzer Moment für den
-          finalen Wert.
-        */
-
-        const nextTimer =
-          setTimeout(() => {
-
-            rollNext(index + 1);
-
-          },550);
-
-
-        statRevealTimers.push(
-          nextTimer
-        );
-
-      },5000);
-
-
-    statRevealTimers.push(
-      revealTimer
-    );
+    statRevealTimers.push(slowTimer);
 
   };
 
-
-  /*
-    Kleine Pause bevor STR startet
-  */
-
   const startTimer =
     setTimeout(() => {
-
       rollNext(0);
-
     },300);
 
-
-  statRevealTimers.push(
-    startTimer
-  );
+  statRevealTimers.push(startTimer);
 
 }
-
-
 
 /* LOGIN */
 
