@@ -1326,100 +1326,63 @@ button{
 /* Choice hint intentionally hidden — the audience only sees the matchup. */
 
 
-/* RESULT */
+/* FIGHTER DETAIL OVERLAY */
 
-.result{
-  text-align:center;
-  padding-top:8px
+.fighter-detail-overlay{
+  position:fixed;
+  inset:0;
+  z-index:75;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px 14px 104px;
+  background:rgba(3,9,18,.64);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  opacity:0;
+  transition:opacity .2s ease;
 }
 
-
-.result-kicker{
-  color:var(--blue2);
-  font-size:10px;
-  font-weight:950;
-  letter-spacing:2.4px;
-  text-transform:uppercase
+.fighter-detail-overlay.show{
+  display:flex;
+  opacity:1;
 }
 
-
-.result-line{
-  width:54px;
-  height:2px;
-  margin:10px auto 12px;
-  border-radius:99px;
-  background:var(--blue);
-  box-shadow:0 0 18px rgba(63,145,255,.28)
-}
-
-
-.result .winner{
-  font-size:36px;
-  line-height:.98;
-  font-weight:950;
-  letter-spacing:-1.3px;
-  margin:0 auto;
-  max-width:100%;
-  overflow-wrap:anywhere;
-  text-shadow:0 0 28px rgba(63,145,255,.18)
-}
-
-
-.result .sub{
-  color:var(--muted);
-  font-size:11px;
-  margin-top:7px
-}
-
-
-.result-badge{
-  display:inline-block;
-  margin:13px auto 12px;
-  padding:5px 9px;
-  border:1px solid #28527e;
-  border-radius:999px;
-  background:#0b1c32;
-  color:var(--blue2);
-  font-size:8px;
-  font-weight:950;
-  letter-spacing:1.5px
-}
-
-
-.result-cards{
-  display:grid;
-  gap:9px;
-  text-align:left;
-  margin-top:2px
-}
-
-
-.result-cards .fighter-card{
-  padding:14px;
-}
-
-
-.result-cards .fighter-card:first-child{
-  border-color:#376eaa;
+.fighter-detail-overlay .fighter-card{
+  width:min(410px,calc(100vw - 28px));
+  max-height:calc(100vh - 132px);
+  margin:0;
+  transform:translateY(8px) scale(.97);
   box-shadow:
-    0 16px 38px rgba(0,0,0,.22),
-    0 0 0 1px rgba(63,145,255,.04),
-    inset 0 1px 0 rgba(255,255,255,.03)
+    0 28px 70px rgba(0,0,0,.48),
+    0 0 0 1px rgba(63,145,255,.10),
+    inset 0 1px 0 rgba(255,255,255,.04);
+  transition:transform .22s cubic-bezier(.16,1,.3,1);
 }
 
-
-.result-cards .fighter-card:first-child .fighter-kicker{
-  color:var(--good)
+.fighter-detail-overlay.show .fighter-card{
+  transform:none;
 }
 
-
-.result-actions{
-  display:grid;
-  gap:8px;
-  margin-top:13px;
-  padding-bottom:4px
+.fighter-detail-close{
+  position:absolute;
+  top:calc(18px + env(safe-area-inset-top));
+  right:16px;
+  width:38px;
+  height:38px;
+  border:1px solid #23466e;
+  border-radius:50%;
+  background:rgba(7,16,31,.72);
+  color:#d9e7f7;
+  font-size:22px;
+  line-height:1;
+  cursor:pointer;
+  box-shadow:0 10px 25px rgba(0,0,0,.24);
 }
 
+.fighter-detail-close:active{
+  transform:scale(.95);
+}
 
 /* BOTTOM NAVIGATION */
 
@@ -1930,86 +1893,29 @@ button{
 
 
 
-<!-- RESULT -->
-
-<section id="result" class="screen">
-
-  <div class="screen-top">
-
-    <div class="brand">
-      THE <span>SUMMIT</span>
-    </div>
-
-    <button
-      class="logout"
-      onclick="logout()">
-
-      LOG OUT
-
-    </button>
-
-  </div>
-
-
-  <div class="result">
-
-    <div class="result-kicker">
-      FINAL RESULT
-    </div>
-
-    <div class="result-line"></div>
-
-    <div
-      class="winner"
-      id="resultWinner">
-
-      —
-
-    </div>
-
-    <div
-      class="sub"
-      id="resultSub">
-
-      —
-
-    </div>
-
-    <div class="result-badge">
-      WINNER
-    </div>
-
-    <div
-      class="result-cards"
-      id="resultCards"></div>
-
-    <div class="result-actions">
-
-      <button
-        class="btn primary"
-        onclick="go('fight')">
-
-        FIGHT AGAIN
-
-      </button>
-
-      <button
-        class="btn ghost"
-        onclick="go('fighters')">
-
-        VIEW RECORDS
-
-      </button>
-
-    </div>
-
-  </div>
-
-</section>
-
-
 </main>
 
+
+
+<!-- FIGHTER DETAIL -->
+
+<div
+  id="fighterDetailOverlay"
+  class="fighter-detail-overlay"
+  onclick="if(event.target===this)closeFighterDetails()">
+
+  <button
+    class="fighter-detail-close"
+    aria-label="Close fighter"
+    onclick="closeFighterDetails()">
+
+    ×
+
+  </button>
+
+  <div id="fighterDetailCard"></div>
+
+</div>
 
 
 <!-- BOTTOM NAVIGATION -->
@@ -2220,6 +2126,8 @@ function authError(m){
 
 function showLogin(){
 
+  closeFighterDetails();
+
   const nav =
     document.getElementById('nav');
 
@@ -2307,10 +2215,7 @@ function go(id){
     });
 
 
-  const navId =
-    id === 'result'
-      ? 'fight'
-      : id;
+  const navId = id;
 
 
   document
@@ -2756,6 +2661,16 @@ async function signUp(){
 
 
 
+document.addEventListener(
+  'keydown',
+  event => {
+    if(event.key === 'Escape'){
+      closeFighterDetails();
+    }
+  }
+);
+
+
 /* LOGOUT */
 
 async function logout(){
@@ -2968,7 +2883,7 @@ function card(f,owner=true){
 
   return `
 
-    <article class="card fighter-card${owner && deleteMode ? ' delete-target' : ''}"${owner && deleteMode ? ' onclick="deleteFighter(\'' + f.id + '\')"' : ''}>
+    <article class="card fighter-card${owner && deleteMode ? ' delete-target' : ''}" onclick="${owner && deleteMode ? 'deleteFighter(\'' + f.id + '\')' : 'openFighterDetails(\'' + f.id + '\')'}">
 
       <div class="fighter-portrait${f.portrait_path ? ' has-image' : ''}">
         ${f.portrait_path ? `<img src="${portraitUrl(f)}" alt="${esc(f.name)} portrait" loading="lazy">` : ''}
@@ -3005,6 +2920,73 @@ function card(f,owner=true){
     </article>
 
   `;
+}
+
+
+/* FIGHTER DETAIL */
+
+function openFighterDetails(id){
+
+  if(deleteMode){
+    return;
+  }
+
+  const fighter =
+    fighters.find(
+      f => f.id === id
+    );
+
+  const overlay =
+    document.getElementById(
+      'fighterDetailOverlay'
+    );
+
+  const target =
+    document.getElementById(
+      'fighterDetailCard'
+    );
+
+  if(!fighter || !overlay || !target){
+    return;
+  }
+
+  target.innerHTML =
+    card(
+      fighter,
+      false
+    );
+
+  overlay.classList.add('show');
+
+  document.body.style.overflow = 'hidden';
+
+}
+
+
+function closeFighterDetails(){
+
+  const overlay =
+    document.getElementById(
+      'fighterDetailOverlay'
+    );
+
+  const target =
+    document.getElementById(
+      'fighterDetailCard'
+    );
+
+  if(!overlay){
+    return;
+  }
+
+  overlay.classList.remove('show');
+
+  if(target){
+    target.innerHTML = '';
+  }
+
+  document.body.style.overflow = '';
+
 }
 
 
@@ -3479,38 +3461,12 @@ async function resolveFight(winId){
   await loadFighters();
 
 
-  const win =
-    fighters.find(
-      f => f.id === winId
-    );
+  renderFightHome();
 
-
-  const lose =
-    fighters.find(
-      f => f.id === loseId
-    );
-
-
-  document.getElementById(
-    'resultWinner'
-  ).textContent =
-    winName + ' WINS';
-
-
-  document.getElementById(
-    'resultSub'
-  ).textContent =
-    loseName + ' takes the loss.';
-
-
-  document.getElementById(
-    'resultCards'
-  ).innerHTML =
-    card(win,false) +
-    card(lose,false);
-
-
-  go('result');
+  toast(
+    winName + ' wins. ' +
+    loseName + ' takes the loss.'
+  );
 
 }
 
