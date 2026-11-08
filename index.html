@@ -816,6 +816,9 @@ button{
   box-shadow:
     0 18px 45px rgba(0,0,0,.24),
     inset 0 1px 0 rgba(255,255,255,.03);
+  display:grid;
+  grid-template-columns:42% 58%;
+  align-items:stretch;
 }
 
 
@@ -835,12 +838,13 @@ button{
 
 .fighter-portrait{
   position:relative;
-  height:190px;
+  min-height:245px;
+  height:100%;
   display:flex;
   align-items:flex-end;
-  padding:14px 17px;
+  padding:14px 12px;
   overflow:hidden;
-  border-bottom:1px solid #23466e;
+  border-right:1px solid #23466e;
   background:
     radial-gradient(circle at 72% 35%,rgba(63,145,255,.18),transparent 28%),
     linear-gradient(135deg,#122f4f,#08172b 72%);
@@ -865,12 +869,12 @@ button{
 .fighter-portrait:after{
   content:"";
   position:absolute;
-  left:17px;
-  right:17px;
+  left:12px;
+  right:12px;
   bottom:12px;
-  height:1px;
-  background:linear-gradient(90deg,#3f91ff,transparent 70%);
-  opacity:.55
+  height:44px;
+  background:linear-gradient(180deg,transparent,rgba(5,15,28,.78));
+  opacity:1
 }
 
 
@@ -888,7 +892,8 @@ button{
 .fighter-body{
   position:relative;
   z-index:1;
-  padding:15px 17px 17px
+  min-width:0;
+  padding:15px 15px 14px
 }
 
 
@@ -985,34 +990,51 @@ button{
 
 .fighter-stats{
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+  gap:9px
+}
+
+
+.fighter-stat{
+  display:grid;
+  grid-template-columns:28px 1fr 22px;
+  align-items:center;
   gap:7px
 }
 
 
-.fighter-stats .stat{
-  background:#081528;
-  border:1px solid #1c3c5d;
-  border-radius:12px;
-  padding:12px 4px 10px;
-  text-align:center;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.02)
-}
-
-
-.fighter-stats .stat b{
-  display:block;
-  font-size:23px;
-  line-height:1;
-  margin-bottom:5px
-}
-
-
-.fighter-stats .stat small{
+.fighter-stat-label{
   color:var(--muted);
-  font-size:8px;
-  font-weight:800;
+  font-size:9px;
+  font-weight:950;
   letter-spacing:1px
+}
+
+
+.fighter-stat-track{
+  position:relative;
+  height:7px;
+  overflow:hidden;
+  border-radius:999px;
+  background:#071426;
+  border:1px solid #1c3c5d;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.35)
+}
+
+
+.fighter-stat-fill{
+  height:100%;
+  border-radius:999px;
+  background:linear-gradient(90deg,#245fba,#3f91ff,#8fc2ff);
+  box-shadow:0 0 12px rgba(63,145,255,.22);
+  transform-origin:left center
+}
+
+
+.fighter-stat-value{
+  color:#f4f7fb;
+  font-size:11px;
+  font-weight:950;
+  text-align:right
 }
 
 
@@ -1065,6 +1087,16 @@ button{
   line-height:1.5
 }
 
+
+@media (max-width:360px){
+  .fighter-card{grid-template-columns:39% 61%}
+  .fighter-portrait{min-height:235px}
+  .fighter-body{padding:13px 12px 12px}
+  .name{font-size:21px}
+  .fighter-stat{grid-template-columns:26px 1fr 19px;gap:5px}
+  .fighter-stat-label{font-size:8px}
+  .fighter-stat-value{font-size:10px}
+}
 
 /* FIGHT */
 
@@ -2833,6 +2865,24 @@ function portraitUrl(f){
 
 function card(f,owner=true){
 
+  const statRows = [
+    ['STR',f.strength],
+    ['INT',f.intelligence],
+    ['DUR',f.durability],
+    ['SPD',f.speed]
+  ].map(([label,v]) => {
+    const value = Math.max(0,Math.min(10,Number(v)||0));
+    return `
+      <div class="fighter-stat">
+        <span class="fighter-stat-label">${label}</span>
+        <span class="fighter-stat-track">
+          <span class="fighter-stat-fill" style="width:${value * 10}%"></span>
+        </span>
+        <span class="fighter-stat-value">${v}</span>
+      </div>
+    `;
+  }).join('');
+
   return `
 
     <article class="card fighter-card">
@@ -2844,116 +2894,42 @@ function card(f,owner=true){
 
       <div class="fighter-body">
 
-      <div class="fighter-head">
+        <div class="fighter-head">
 
-        <div class="fighter-identity">
-
-          <div class="fighter-kicker">
-            Fighter
+          <div class="fighter-identity">
+            <div class="fighter-kicker">Fighter</div>
+            <div class="name">${esc(f.name)}</div>
+            <div class="human">Human Contender</div>
           </div>
 
-          <div class="name">
-            ${esc(f.name)}
-          </div>
-
-          <div class="human">
-            Human Contender
+          <div class="record">
+            <span class="record-label">RECORD</span>
+            <span class="w">W ${String(f.wins).padStart(2,'0')}</span>
+            <span>—</span>
+            <span class="l">L ${String(f.losses).padStart(2,'0')}</span>
           </div>
 
         </div>
 
+        <div class="fighter-divider"></div>
 
-        <div class="record">
-
-          <span class="record-label">
-            RECORD
-          </span>
-
-          <span class="w">
-            W ${String(f.wins).padStart(2,'0')}
-          </span>
-
-          <span>
-            —
-          </span>
-
-          <span class="l">
-            L ${String(f.losses).padStart(2,'0')}
-          </span>
-
+        <div class="fighter-stats">
+          ${statRows}
         </div>
 
-      </div>
-
-
-      <div class="fighter-divider"></div>
-
-
-      <div class="fighter-stats">
-
-        ${
-          [
-            f.strength,
-            f.intelligence,
-            f.durability,
-            f.speed
-          ]
-          .map((v,i) => `
-
-            <div class="stat">
-
-              <b>${v}</b>
-
-              <small>
-                ${STAT_NAMES[i]}
-              </small>
-
-            </div>
-
-          `)
-          .join('')
-        }
-
-      </div>
-
-
-      ${
-        owner
-          ? `
-
-            <div class="actions">
-
-              <button
-                class="smallbtn"
-                onclick="startAgainst('${f.id}')">
-
-                FIGHT
-
-              </button>
-
-
-              <button
-                class="smallbtn"
-                onclick="deleteFighter('${f.id}')">
-
-                DELETE
-
-              </button>
-
-            </div>
-
-          `
-          : ''
-      }
+        ${owner ? `
+          <div class="actions">
+            <button class="smallbtn" onclick="startAgainst('${f.id}')">FIGHT</button>
+            <button class="smallbtn" onclick="deleteFighter('${f.id}')">DELETE</button>
+          </div>
+        ` : ''}
 
       </div>
 
     </article>
 
   `;
-
 }
-
 
 
 /* RENDER FIGHTERS */
