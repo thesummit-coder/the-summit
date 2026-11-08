@@ -946,28 +946,54 @@ button{
 .fight-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:10px
+  gap:9px
 }
 
 
 .versus{
-  text-align:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  margin:16px 0 12px;
   color:var(--blue2);
-  font-weight:900;
+  font-size:10px;
+  font-weight:950;
   letter-spacing:2px;
-  margin:12px 0
+  text-transform:uppercase
+}
+
+
+.versus:before,
+.versus:after{
+  content:"";
+  flex:1;
+  height:1px;
+  background:linear-gradient(90deg,transparent,#23466e)
+}
+
+
+.versus:after{
+  background:linear-gradient(90deg,#23466e,transparent)
 }
 
 
 .fighter-choice{
-  border:1px solid var(--line);
-  background:#0d1b30;
+  position:relative;
+  overflow:hidden;
+  border:1px solid #28527e;
+  background:
+    radial-gradient(circle at 100% 0,rgba(63,145,255,.10),transparent 45%),
+    linear-gradient(145deg,#102943,#09182b);
   color:var(--text);
   border-radius:16px;
   padding:14px;
   text-align:left;
   cursor:pointer;
-  width:100%
+  width:100%;
+  box-shadow:
+    0 14px 32px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.025)
 }
 
 
@@ -978,15 +1004,58 @@ button{
 
 
 .fighter-choice .mini{
-  font-size:18px;
-  font-weight:900
+  font-size:17px;
+  line-height:1.05;
+  font-weight:950;
+  overflow-wrap:anywhere
 }
 
 
 .fighter-choice .mini-record{
-  font-size:10px;
+  font-size:9px;
   color:var(--muted);
-  margin-top:3px
+  margin-top:6px;
+  letter-spacing:.4px
+}
+
+
+.fighter-choice .stats{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:6px;
+  margin-top:11px
+}
+
+
+.fighter-choice .stat{
+  background:#081528;
+  border-color:#1c3c5d;
+  border-radius:9px;
+  padding:8px 3px
+}
+
+
+.fighter-choice .stat b{
+  font-size:19px
+}
+
+
+.fighter-choice .stat small{
+  font-size:8px
+}
+
+
+.fighter-choice:after{
+  content:"TAP TO CHOOSE";
+  display:block;
+  margin-top:10px;
+  padding-top:9px;
+  border-top:1px solid #1b395a;
+  color:#607895;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:1.2px;
+  text-align:center
 }
 
 
