@@ -779,7 +779,7 @@ button{
 .fighter-card{
   position:relative;
   overflow:hidden;
-  padding:17px;
+  padding:0;
   border-color:#28527e;
   background:
     radial-gradient(circle at 100% 0,rgba(63,145,255,.12),transparent 34%),
@@ -801,6 +801,65 @@ button{
   background:rgba(63,145,255,.08);
   filter:blur(8px);
   pointer-events:none
+}
+
+
+.fighter-portrait{
+  position:relative;
+  height:132px;
+  display:flex;
+  align-items:flex-end;
+  padding:14px 17px;
+  overflow:hidden;
+  border-bottom:1px solid #23466e;
+  background:
+    radial-gradient(circle at 72% 35%,rgba(63,145,255,.18),transparent 28%),
+    linear-gradient(135deg,#122f4f,#08172b 72%);
+}
+
+
+.fighter-portrait:before{
+  content:"";
+  position:absolute;
+  width:108px;
+  height:108px;
+  right:28px;
+  top:10px;
+  border:1px solid rgba(143,194,255,.12);
+  border-radius:50%;
+  box-shadow:
+    0 0 0 18px rgba(63,145,255,.025),
+    0 0 0 36px rgba(63,145,255,.018);
+}
+
+
+.fighter-portrait:after{
+  content:"";
+  position:absolute;
+  left:17px;
+  right:17px;
+  bottom:12px;
+  height:1px;
+  background:linear-gradient(90deg,#3f91ff,transparent 70%);
+  opacity:.55
+}
+
+
+.portrait-mark{
+  position:relative;
+  z-index:1;
+  color:#607895;
+  font-size:9px;
+  font-weight:950;
+  letter-spacing:2px;
+  text-transform:uppercase
+}
+
+
+.fighter-body{
+  position:relative;
+  z-index:1;
+  padding:15px 17px 17px
 }
 
 
@@ -2637,6 +2696,12 @@ function card(f,owner=true){
 
     <article class="card fighter-card">
 
+      <div class="fighter-portrait">
+        <div class="portrait-mark">SUMMIT // HUMAN CONTENDER</div>
+      </div>
+
+      <div class="fighter-body">
+
       <div class="fighter-head">
 
         <div class="fighter-identity">
@@ -2738,6 +2803,8 @@ function card(f,owner=true){
           `
           : ''
       }
+
+      </div>
 
     </article>
 
