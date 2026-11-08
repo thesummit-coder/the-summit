@@ -776,6 +776,35 @@ button{
 
 /* FIGHTERS */
 
+.fighter-portrait img{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center 24%;
+  display:block;
+  filter:saturate(.92) contrast(1.04);
+}
+
+.fighter-portrait.has-image{
+  background:#08172b;
+}
+
+.fighter-portrait.has-image:after{
+  height:34px;
+  left:0;
+  right:0;
+  bottom:0;
+  opacity:1;
+  background:linear-gradient(180deg,transparent,rgba(5,15,28,.92));
+}
+
+.fighter-portrait.has-image .portrait-mark{
+  color:#b8d7ff;
+  text-shadow:0 1px 10px rgba(0,0,0,.55);
+}
+
 .fighter-card{
   position:relative;
   overflow:hidden;
@@ -1098,6 +1127,45 @@ button{
   border-color:var(--blue)
 }
 
+
+.fighter-choice .mini-portrait{
+  position:relative;
+  height:118px;
+  margin:-14px -14px 13px;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 70% 30%,rgba(63,145,255,.16),transparent 35%),
+    linear-gradient(135deg,#122f4f,#08172b 72%);
+  border-bottom:1px solid #23466e;
+}
+
+.fighter-choice .mini-portrait img{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+  object-position:center 24%;
+}
+
+.fighter-choice .mini-portrait:after{
+  content:"";
+  position:absolute;
+  inset:auto 0 0;
+  height:45%;
+  background:linear-gradient(180deg,transparent,rgba(5,15,28,.82));
+  pointer-events:none;
+}
+
+.fighter-choice .mini-portrait span{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  color:#607895;
+  font-size:9px;
+  font-weight:950;
+  letter-spacing:2px;
+}
 
 .fighter-choice .mini{
   font-size:17px;
@@ -2728,7 +2796,7 @@ async function createFighter(){
   fighters.unshift({
     ...data,
     portrait_path:
-      data.portrait_path ||
+      portraitPayload.portrait_path ||
       null,
     portrait_generated:true
   });
@@ -2743,6 +2811,23 @@ async function createFighter(){
 
 
 
+/* PORTRAIT URL */
+
+function portraitUrl(f){
+
+  if(!f || !f.portrait_path){
+    return '';
+  }
+
+  return supabase
+    .storage
+    .from('fighter-portraits')
+    .getPublicUrl(f.portrait_path)
+    .data
+    .publicUrl;
+}
+
+
 /* FIGHTER CARD */
 
 function card(f,owner=true){
@@ -2751,8 +2836,9 @@ function card(f,owner=true){
 
     <article class="card fighter-card">
 
-      <div class="fighter-portrait">
-        <div class="portrait-mark">SUMMIT // HUMAN CONTENDER</div>
+      <div class="fighter-portrait${f.portrait_path ? ' has-image' : ''}">
+        ${f.portrait_path ? `<img src="${portraitUrl(f)}" alt="${esc(f.name)} portrait" loading="lazy">` : ''}
+        <div class="portrait-mark">${f.portrait_path ? 'THE SUMMIT // FIGHTER IDENTITY' : 'SUMMIT // HUMAN CONTENDER'}</div>
       </div>
 
       <div class="fighter-body">
@@ -3166,6 +3252,10 @@ function startFight(a,b){
 function choiceInner(f){
 
   return `
+
+    <div class="mini-portrait">
+      ${f.portrait_path ? `<img src="${portraitUrl(f)}" alt="${esc(f.name)} portrait" loading="lazy">` : '<span>SUMMIT</span>'}
+    </div>
 
     <div class="mini">
       ${esc(f.name)}
