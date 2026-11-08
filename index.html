@@ -2009,19 +2009,25 @@ function generateStats(){
 
     let value = rand();
 
+    /* Move the actual wheel strip so the numbers visibly fly by. */
+    let wheelPosition = 8;
+
+    const moveWheel = () => {
+      wheelPosition += 1;
+
+      strip.style.transform =
+        `translateY(calc(-50% - ${wheelPosition * 34 - 17}px))`;
+
+      value =
+        ((wheelPosition % 10) + 1);
+    };
+
+    strip.style.transition = 'none';
+    strip.style.transform =
+      `translateY(calc(-50% - ${wheelPosition * 34 - 17}px))`;
+
     const spinTimer =
-      setInterval(() => {
-
-        value = rand();
-
-        const current =
-          card.querySelector('.wheel-number');
-
-        if(current){
-          /* visual spin is driven by the strip below */
-        }
-
-      },72);
+      setInterval(moveWheel,72);
 
     statRollTimer = spinTimer;
 
@@ -2034,9 +2040,7 @@ function generateStats(){
         }
 
         const slow =
-          setInterval(() => {
-            value = rand();
-          },145);
+          setInterval(moveWheel,145);
 
         statRollTimer = slow;
 
