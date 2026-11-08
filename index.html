@@ -937,15 +937,6 @@ button{
 }
 
 
-.human{
-  color:var(--muted);
-  font-size:10px;
-  text-transform:uppercase;
-  letter-spacing:1.3px;
-  margin-top:6px
-}
-
-
 .record{
   display:flex;
   align-items:center;
@@ -2961,7 +2952,7 @@ function card(f,owner=true){
 
       <div class="fighter-portrait${f.portrait_path ? ' has-image' : ''}">
         ${f.portrait_path ? `<img src="${portraitUrl(f)}" alt="${esc(f.name)} portrait" loading="lazy">` : ''}
-        <div class="portrait-mark">${f.portrait_path ? 'THE SUMMIT // FIGHTER IDENTITY' : 'SUMMIT // HUMAN CONTENDER'}</div>
+        <div class="portrait-mark">${f.portrait_path ? 'THE SUMMIT // FIGHTER IDENTITY' : 'SUMMIT // CONTENDER'}</div>
       </div>
 
       <div class="fighter-body">
