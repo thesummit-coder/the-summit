@@ -904,15 +904,13 @@ button{
 
 
 .fighter-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:12px
+  display:block
 }
 
 
 .fighter-identity{
-  min-width:0
+  min-width:0;
+  width:100%
 }
 
 
@@ -934,11 +932,8 @@ button{
   overflow-wrap:normal;
   word-break:normal;
   white-space:normal;
-  display:-webkit-box;
-  -webkit-box-orient:vertical;
-  -webkit-line-clamp:2;
-  line-clamp:2;
-  overflow:hidden;
+  display:block;
+  overflow:visible;
 }
 
 
@@ -952,25 +947,21 @@ button{
 
 
 .record{
-  flex-shrink:0;
-  min-width:76px;
-  padding:7px 8px;
-  border:1px solid #1f4268;
-  border-radius:10px;
-  background:rgba(6,18,33,.55);
-  text-align:right;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin-top:14px;
+  color:#607895;
+  font-size:10px;
   font-weight:900;
-  font-size:11px;
-  line-height:1.5
+  letter-spacing:1px;
+  text-transform:uppercase
 }
 
 
 .record-label{
-  display:block;
   color:#607895;
-  font-size:8px;
-  letter-spacing:1.2px;
-  margin-bottom:1px
+  margin-right:2px
 }
 
 
@@ -1089,6 +1080,37 @@ button{
 
 .smallbtn:active{
   transform:scale(.98)
+}
+
+
+.delete-mode-btn{
+  border-color:#8f3040;
+  color:#ff9aa7;
+  background:rgba(80,18,30,.45)
+}
+
+
+.delete-mode-btn.active{
+  border-color:#ff4d5a;
+  color:#fff;
+  background:#7b2230;
+  box-shadow:0 8px 20px rgba(255,77,90,.18)
+}
+
+
+.fighter-card.delete-target{
+  border-color:#ff4d5a;
+  box-shadow:
+    0 18px 45px rgba(0,0,0,.24),
+    0 0 0 1px rgba(255,77,90,.18),
+    inset 0 1px 0 rgba(255,255,255,.03);
+  cursor:pointer
+}
+
+
+.fighter-card.delete-target .fighter-portrait:after{
+  background:
+    linear-gradient(180deg,transparent 55%,rgba(100,15,28,.72) 100%)
 }
 
 
@@ -1676,7 +1698,7 @@ button{
     <input
       id="nameInput"
       class="input create-name"
-      maxlength="24"
+      maxlength="20"
       placeholder="Enter fighter name"
       autocomplete="off">
 
@@ -1771,10 +1793,11 @@ button{
     </div>
 
     <button
-      class="logout"
-      onclick="logout()">
+      id="deleteModeBtn"
+      class="logout delete-mode-btn"
+      onclick="toggleDeleteMode()">
 
-      LOG OUT
+      DELETE
 
     </button>
 
@@ -2077,6 +2100,7 @@ let fighters = [];
 let draft = null;
 let currentFight = null;
 let selected = [];
+let deleteMode = false;
 
 
 /* STAT ROLL STATE */
@@ -2899,7 +2923,7 @@ function card(f,owner=true){
 
   return `
 
-    <article class="card fighter-card">
+    <article class="card fighter-card${owner && deleteMode ? ' delete-target' : ''}"${owner && deleteMode ? ' onclick="deleteFighter(\'' + f.id + '\')"' : ''}>
 
       <div class="fighter-portrait${f.portrait_path ? ' has-image' : ''}">
         ${f.portrait_path ? `<img src="${portraitUrl(f)}" alt="${esc(f.name)} portrait" loading="lazy">` : ''}
@@ -2916,13 +2940,6 @@ function card(f,owner=true){
             <div class="human">Human Contender</div>
           </div>
 
-          <div class="record">
-            <span class="record-label">RECORD</span>
-            <span class="w">W ${String(f.wins).padStart(2,'0')}</span>
-            <span>—</span>
-            <span class="l">L ${String(f.losses).padStart(2,'0')}</span>
-          </div>
-
         </div>
 
         <div class="fighter-divider"></div>
@@ -2931,12 +2948,12 @@ function card(f,owner=true){
           ${statRows}
         </div>
 
-        ${owner ? `
-          <div class="actions">
-            <button class="smallbtn" onclick="startAgainst('${f.id}')">FIGHT</button>
-            <button class="smallbtn" onclick="deleteFighter('${f.id}')">DELETE</button>
-          </div>
-        ` : ''}
+        <div class="record">
+          <span class="record-label">RECORD</span>
+          <span class="w">W ${String(f.wins).padStart(2,'0')}</span>
+          <span>—</span>
+          <span class="l">L ${String(f.losses).padStart(2,'0')}</span>
+        </div>
 
       </div>
 
@@ -2949,6 +2966,13 @@ function card(f,owner=true){
 /* RENDER FIGHTERS */
 
 function renderFighters(){
+
+  const deleteBtn = document.getElementById('deleteModeBtn');
+
+  if(deleteBtn){
+    deleteBtn.textContent = deleteMode ? 'CANCEL' : 'DELETE';
+    deleteBtn.classList.toggle('active', deleteMode);
+  }
 
   document.getElementById(
     'fighterCount'
@@ -2987,6 +3011,17 @@ function renderFighters(){
 
 }
 
+
+
+/* DELETE MODE */
+
+function toggleDeleteMode(){
+
+  deleteMode = !deleteMode;
+
+  renderFighters();
+
+}
 
 
 /* DELETE FIGHTER */
@@ -3033,6 +3068,7 @@ async function deleteFighter(id){
     );
 
 
+  deleteMode = false;
   renderFighters();
 
 
