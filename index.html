@@ -2713,9 +2713,15 @@ async function createFighter(){
       confirmBtn.textContent = 'CONFIRM FIGHTER';
     }
 
+    const portraitDetail =
+      portraitPayload.detail
+        ? ' — ' + portraitPayload.detail
+        : '';
+
     return toast(
-      portraitPayload.error ||
-      'Fighter created, but portrait generation failed.'
+      (portraitPayload.error ||
+      'Fighter created, but portrait generation failed.') +
+      portraitDetail
     );
   }
 
