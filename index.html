@@ -1186,35 +1186,68 @@ button{
   position:fixed;
   z-index:50;
   left:50%;
-  bottom:0;
+  bottom:10px;
   transform:translateX(-50%);
-  width:min(430px,100%);
+  width:min(410px,calc(100% - 20px));
   display:none;
   grid-template-columns:repeat(3,1fr);
-  gap:6px;
-  padding:8px 10px calc(8px + env(safe-area-inset-bottom));
-  background:rgba(5,13,25,.96);
-  backdrop-filter:blur(14px);
-  border-top:1px solid #23466e
+  gap:7px;
+  padding:7px;
+  background:rgba(5,13,25,.88);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  border:1px solid #1c395b;
+  border-radius:18px;
+  box-shadow:
+    0 14px 35px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.03)
 }
 
 
 .nav button{
+  position:relative;
   border:1px solid transparent;
-  background:#0b1a2e;
-  color:#8299b7;
+  background:transparent;
+  color:#7188a5;
   border-radius:12px;
-  padding:9px 3px 8px;
+  padding:8px 3px 7px;
   font-size:9px;
-  font-weight:900;
-  letter-spacing:.8px
+  font-weight:950;
+  letter-spacing:.9px;
+  transition:
+    background .18s ease,
+    border-color .18s ease,
+    color .18s ease,
+    transform .12s ease
+}
+
+
+.nav button:active{
+  transform:scale(.96)
 }
 
 
 .nav button.active{
-  background:#12365d;
-  border-color:#3f91ff;
-  color:#fff
+  background:linear-gradient(145deg,#12365d,#0d2948);
+  border-color:#2d69a8;
+  color:#fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 5px 16px rgba(63,145,255,.10)
+}
+
+
+.nav button.active:after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:4px;
+  width:18px;
+  height:2px;
+  border-radius:99px;
+  transform:translateX(-50%);
+  background:var(--blue);
+  box-shadow:0 0 10px rgba(63,145,255,.5)
 }
 
 
@@ -1222,7 +1255,8 @@ button{
   display:block;
   font-size:18px;
   line-height:18px;
-  margin-bottom:3px
+  margin-bottom:3px;
+  font-weight:700
 }
 
 
