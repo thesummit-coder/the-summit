@@ -1128,6 +1128,73 @@ button{
 }
 
 
+.fighter-header-actions{
+  display:flex;
+  align-items:center;
+  gap:7px
+}
+
+.champion-mode-btn{
+  border-color:#7a6330;
+  color:#f4d36b;
+  background:rgba(92,70,16,.30)
+}
+
+.champion-mode-btn.active{
+  border-color:#ffd84a;
+  color:#07101f;
+  background:#c89b2c;
+  box-shadow:0 8px 20px rgba(255,216,74,.18)
+}
+
+.fighter-card.champion{
+  border-color:#d6ad3a;
+  box-shadow:
+    0 18px 45px rgba(0,0,0,.26),
+    0 0 0 1px rgba(255,216,74,.20),
+    0 0 28px rgba(255,216,74,.08),
+    inset 0 1px 0 rgba(255,255,255,.04)
+}
+
+.fighter-card.champion .fighter-portrait{
+  border-right-color:#806622
+}
+
+.fighter-card.champion .fighter-portrait:after{
+  background:
+    linear-gradient(180deg,transparent 45%,rgba(82,59,10,.60) 100%)
+}
+
+.fighter-card.champion .fighter-kicker{
+  color:#ffe477
+}
+
+.champion-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  width:max-content;
+  margin-top:7px;
+  padding:4px 7px;
+  border:1px solid rgba(255,216,74,.34);
+  border-radius:999px;
+  background:rgba(255,216,74,.07);
+  color:#ffe477;
+  font-size:8px;
+  font-weight:950;
+  letter-spacing:1.2px;
+  text-transform:uppercase
+}
+
+.champion-badge:before{
+  content:'✦';
+  font-size:8px
+}
+
+.fighter-card.champion .record{
+  border-color:#806622
+}
+
 .delete-mode-btn{
   border-color:#8f3040;
   color:#ff9aa7;
@@ -1804,14 +1871,25 @@ button{
       THE <span>SUMMIT</span>
     </div>
 
-    <button
-      id="deleteModeBtn"
-      class="logout delete-mode-btn"
-      onclick="toggleDeleteMode()">
+    <div class="fighter-header-actions">
+      <button
+        id="championModeBtn"
+        class="logout champion-mode-btn"
+        onclick="toggleChampionMode()">
 
-      DELETE
+        CHAMPION
 
-    </button>
+      </button>
+
+      <button
+        id="deleteModeBtn"
+        class="logout delete-mode-btn"
+        onclick="toggleDeleteMode()">
+
+        DELETE
+
+      </button>
+    </div>
 
   </div>
 
@@ -2047,6 +2125,7 @@ let draft = null;
 let currentFight = null;
 let selected = [];
 let deleteMode = false;
+let championMode = false;
 
 
 /* STAT ROLL STATE */
@@ -2878,7 +2957,7 @@ function card(f,owner=true){
 
   return `
 
-    <article class="card fighter-card${owner && deleteMode ? ' delete-target' : ''}" onclick="${owner && deleteMode ? 'deleteFighter(\'' + f.id + '\')' : 'openFighterDetails(\'' + f.id + '\')'}">
+    <article class="card fighter-card${f.champion ? ' champion' : ''}${owner && deleteMode ? ' delete-target' : ''}" onclick="${owner && deleteMode ? 'deleteFighter(\'' + f.id + '\')' : owner && championMode ? 'setChampion(\'' + f.id + '\')' : 'openFighterDetails(\'' + f.id + '\')'}">
 
       <div class="fighter-portrait${f.portrait_path ? ' has-image' : ''}">
         ${f.portrait_path ? `<img src="${portraitUrl(f)}" alt="${esc(f.name)} portrait" loading="lazy">` : ''}
@@ -2890,9 +2969,9 @@ function card(f,owner=true){
         <div class="fighter-head">
 
           <div class="fighter-identity">
-            <div class="fighter-kicker">Fighter</div>
+            <div class="fighter-kicker">${f.champion ? 'SUMMIT CHAMPION' : 'CONTENDER'}</div>
             <div class="name">${esc(f.name)}</div>
-            <div class="human">Human Contender</div>
+            ${f.champion ? '<div class="champion-badge">SUMMIT CHAMPION</div>' : ''}
           </div>
 
         </div>
@@ -2922,7 +3001,7 @@ function card(f,owner=true){
 
 function openFighterDetails(id){
 
-  if(deleteMode){
+  if(deleteMode || championMode){
     return;
   }
 
@@ -2998,6 +3077,13 @@ function renderFighters(){
     deleteBtn.classList.toggle('active', deleteMode);
   }
 
+  const championBtn = document.getElementById('championModeBtn');
+
+  if(championBtn){
+    championBtn.textContent = championMode ? 'CANCEL' : 'CHAMPION';
+    championBtn.classList.toggle('active', championMode);
+  }
+
   document.getElementById(
     'fighterCount'
   ).textContent = fighters.length;
@@ -3041,9 +3127,55 @@ function renderFighters(){
 
 function toggleDeleteMode(){
 
+  if(!deleteMode && championMode){
+    championMode = false;
+  }
+
   deleteMode = !deleteMode;
 
   renderFighters();
+
+}
+
+function toggleChampionMode(){
+
+  if(!championMode && deleteMode){
+    deleteMode = false;
+  }
+
+  championMode = !championMode;
+
+  renderFighters();
+
+}
+
+async function setChampion(id){
+
+  if(!championMode){
+    return;
+  }
+
+  const fighter = fighters.find(f => f.id === id);
+
+  if(!fighter || fighter.user_id !== user.id){
+    return;
+  }
+
+  const {error} = await supabase.rpc(
+    'set_fighter_champion',
+    {p_fighter_id:id}
+  );
+
+  if(error){
+    return toast(error.message);
+  }
+
+  await loadFighters();
+
+  championMode = false;
+  renderFighters();
+
+  toast(fighter.name + ' is now the Summit Champion.');
 
 }
 
@@ -3314,7 +3446,7 @@ function choiceInner(f){
 
 
     <div class="mini-record">
-      Human · W ${f.wins} — L ${f.losses}
+      ${f.champion ? 'SUMMIT CHAMPION' : 'CONTENDER'} · W ${f.wins} — L ${f.losses}
     </div>
 
 
