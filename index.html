@@ -1063,20 +1063,94 @@ button{
 
 .result{
   text-align:center;
-  padding-top:12px
+  padding-top:8px
+}
+
+
+.result-kicker{
+  color:var(--blue2);
+  font-size:10px;
+  font-weight:950;
+  letter-spacing:2.4px;
+  text-transform:uppercase
+}
+
+
+.result-line{
+  width:54px;
+  height:2px;
+  margin:10px auto 12px;
+  border-radius:99px;
+  background:var(--blue);
+  box-shadow:0 0 18px rgba(63,145,255,.28)
 }
 
 
 .result .winner{
-  font-size:42px;
+  font-size:36px;
+  line-height:.98;
   font-weight:950;
-  letter-spacing:-1px;
-  margin:8px 0
+  letter-spacing:-1.3px;
+  margin:0 auto;
+  max-width:100%;
+  overflow-wrap:anywhere;
+  text-shadow:0 0 28px rgba(63,145,255,.18)
 }
 
 
 .result .sub{
-  color:var(--muted)
+  color:var(--muted);
+  font-size:11px;
+  margin-top:7px
+}
+
+
+.result-badge{
+  display:inline-block;
+  margin:13px auto 12px;
+  padding:5px 9px;
+  border:1px solid #28527e;
+  border-radius:999px;
+  background:#0b1c32;
+  color:var(--blue2);
+  font-size:8px;
+  font-weight:950;
+  letter-spacing:1.5px
+}
+
+
+.result-cards{
+  display:grid;
+  gap:9px;
+  text-align:left;
+  margin-top:2px
+}
+
+
+.result-cards .fighter-card{
+  padding:14px;
+}
+
+
+.result-cards .fighter-card:first-child{
+  border-color:#376eaa;
+  box-shadow:
+    0 16px 38px rgba(0,0,0,.22),
+    0 0 0 1px rgba(63,145,255,.04),
+    inset 0 1px 0 rgba(255,255,255,.03)
+}
+
+
+.result-cards .fighter-card:first-child .fighter-kicker{
+  color:var(--good)
+}
+
+
+.result-actions{
+  display:grid;
+  gap:8px;
+  margin-top:13px;
+  padding-bottom:4px
 }
 
 
@@ -1577,10 +1651,11 @@ button{
 
   <div class="result">
 
-    <div class="eyebrow">
-      Fight Result
+    <div class="result-kicker">
+      FINAL RESULT
     </div>
 
+    <div class="result-line"></div>
 
     <div
       class="winner"
@@ -1590,7 +1665,6 @@ button{
 
     </div>
 
-
     <div
       class="sub"
       id="resultSub">
@@ -1599,26 +1673,33 @@ button{
 
     </div>
 
+    <div class="result-badge">
+      WINNER
+    </div>
 
-    <div id="resultCards"></div>
+    <div
+      class="result-cards"
+      id="resultCards"></div>
 
+    <div class="result-actions">
 
-    <button
-      class="btn primary"
-      onclick="go('fight')">
+      <button
+        class="btn primary"
+        onclick="go('fight')">
 
-      FIGHT AGAIN
+        FIGHT AGAIN
 
-    </button>
+      </button>
 
+      <button
+        class="btn ghost"
+        onclick="go('fighters')">
 
-    <button
-      class="btn ghost"
-      onclick="go('fighters')">
+        VIEW RECORDS
 
-      VIEW RECORDS
+      </button>
 
-    </button>
+    </div>
 
   </div>
 
