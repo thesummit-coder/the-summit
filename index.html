@@ -596,6 +596,79 @@ button{
   }
 }
 
+/* SINGLE STAT ROLL */
+
+.roll-stage{
+  min-height:220px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:22px 14px;
+  border:1px solid #28527e;
+  border-radius:18px;
+  background:
+    radial-gradient(circle at 50% 42%,rgba(63,145,255,.12),transparent 52%),
+    linear-gradient(145deg,#0d223b,#071426);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.025),
+    0 18px 45px rgba(0,0,0,.20);
+}
+
+.roll-label{
+  min-height:18px;
+  color:var(--blue2);
+  font-size:11px;
+  font-weight:950;
+  letter-spacing:2.2px;
+  text-transform:uppercase;
+}
+
+.roll-value{
+  min-height:92px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:4px 0 0;
+  font-size:82px;
+  line-height:.95;
+  font-weight:950;
+  letter-spacing:-5px;
+  color:#fff;
+  text-shadow:0 0 24px rgba(63,145,255,.28);
+}
+
+.roll-value.spinning{
+  animation:rollPulse .09s linear infinite alternate;
+}
+
+.roll-value.locked{
+  animation:rollLock .42s ease-out;
+  color:#fff;
+  text-shadow:0 0 34px rgba(63,145,255,.42);
+}
+
+.roll-hint{
+  min-height:15px;
+  margin-top:8px;
+  color:#607895;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:1.8px;
+}
+
+@keyframes rollPulse{
+  from{transform:translateY(-2px) scale(.98);opacity:.68}
+  to{transform:translateY(2px) scale(1.02);opacity:1}
+}
+
+@keyframes rollLock{
+  0%{opacity:.35;transform:scale(.72)}
+  55%{opacity:1;transform:scale(1.10)}
+  100%{opacity:1;transform:scale(1)}
+}
+
 /* FINAL FIGHTER REVEAL */
 
 .reveal-card{
@@ -1133,22 +1206,27 @@ button{
       id="draftArea"
       style="display:none">
 
-      <div class="attribute-header">
-
-        <h3>
-          Fighter Attributes
-        </h3>
-
-        <span>
-          1–10
-        </span>
-
-      </div>
-
-
       <div
-        id="draftStats"
-        class="stats">
+        id="rollStage"
+        class="roll-stage">
+
+        <div
+          id="rollLabel"
+          class="roll-label">
+        </div>
+
+        <div
+          id="rollValue"
+          class="roll-value">
+          —
+        </div>
+
+        <div
+          id="rollHint"
+          class="roll-hint">
+          ROLLING
+        </div>
+
       </div>
 
 
@@ -1776,6 +1854,26 @@ function resetCreate(){
     revealCard.innerHTML = '';
   }
 
+  const rollStage =
+    document.getElementById('rollStage');
+
+  if(rollStage){
+    rollStage.style.display = 'none';
+  }
+
+  const rollLabel =
+    document.getElementById('rollLabel');
+
+  const rollValue =
+    document.getElementById('rollValue');
+
+  const rollHint =
+    document.getElementById('rollHint');
+
+  if(rollLabel) rollLabel.textContent = '';
+  if(rollValue) rollValue.textContent = '—';
+  if(rollHint) rollHint.textContent = 'ROLLING';
+
 }
 
 
@@ -1815,64 +1913,23 @@ function generateStats(){
 
   rollingStats = true;
 
-  document.getElementById(
-    'draftStats'
-  ).innerHTML =
-    Object.keys(draft)
-      .map(k => {
+  const rollStage = document.getElementById('rollStage');
+  const rollLabel = document.getElementById('rollLabel');
+  const rollValue = document.getElementById('rollValue');
+  const rollHint = document.getElementById('rollHint');
 
-        const numbers = Array.from(
-          {length:80},
-          (_,i) => (i % 10) + 1
-        );
+  if(!rollStage || !rollLabel || !rollValue){
+    rollingStats = false;
+    return;
+  }
 
-        return `
-          <div
-            class="stat"
-            data-stat="${k}">
+  document.getElementById('draftArea').style.display = 'block';
+  rollStage.style.display = 'flex';
+  document.getElementById('generateBtn').style.display = 'none';
+  document.getElementById('rerollBtn').style.display = 'none';
+  document.getElementById('confirmBtn').style.display = 'none';
 
-            <div class="stat-wheel">
-              <div class="wheel-pointer"></div>
-
-              <div
-                class="wheel-strip"
-                data-wheel="${k}">
-
-                ${numbers.map(n => `
-                  <div class="wheel-number">${n}</div>
-                `).join('')}
-
-              </div>
-            </div>
-
-            <small>
-              ${statLabel(k)}
-            </small>
-
-          </div>
-        `;
-
-      })
-      .join('');
-
-  document.getElementById(
-    'draftArea'
-  ).style.display = 'block';
-
-  document.getElementById(
-    'generateBtn'
-  ).style.display = 'none';
-
-  document.getElementById(
-    'rerollBtn'
-  ).style.display = 'none';
-
-  document.getElementById(
-    'confirmBtn'
-  ).style.display = 'none';
-
-  const revealCard =
-    document.getElementById('revealCard');
+  const revealCard = document.getElementById('revealCard');
 
   if(revealCard){
     revealCard.style.display = 'none';
@@ -1886,209 +1943,139 @@ function generateStats(){
     'speed'
   ];
 
+  const labels = {
+    strength:'STRENGTH',
+    intelligence:'INTELLIGENCE',
+    durability:'DURABILITY',
+    speed:'SPEED'
+  };
+
   const rollNext = index => {
 
     if(index >= keys.length){
 
-      const revealTimer =
-        setTimeout(() => {
+      rollStage.style.display = 'none';
 
-          const reveal =
-            document.getElementById('revealCard');
+      const revealTimer = setTimeout(() => {
 
-          const name =
-            document
-              .getElementById('nameInput')
-              .value
-              .trim() || 'Unnamed Fighter';
+        const reveal = document.getElementById('revealCard');
 
-          if(reveal){
+        const name =
+          document.getElementById('nameInput').value.trim() ||
+          'Unnamed Fighter';
 
-            reveal.innerHTML = `
-              <div class="reveal-top">
-                <span class="reveal-kicker">
-                  Fighter Locked
-                </span>
+        if(reveal){
 
-                <span class="reveal-ready">
-                  READY
-                </span>
-              </div>
+          reveal.innerHTML = `
+            <div class="reveal-top">
+              <span class="reveal-kicker">Fighter Locked</span>
+              <span class="reveal-ready">READY</span>
+            </div>
 
-              <div class="reveal-name">
-                ${esc(name)}
-              </div>
+            <div class="reveal-name">
+              ${esc(name)}
+            </div>
 
-              <div class="stats">
+            <div class="stats">
+              ${[
+                draft.strength,
+                draft.intelligence,
+                draft.durability,
+                draft.speed
+              ].map((v,i) => `
+                <div class="stat">
+                  <b>${v}</b>
+                  <small>${STAT_NAMES[i]}</small>
+                </div>
+              `).join('')}
+            </div>
+          `;
 
-                ${[
-                  draft.strength,
-                  draft.intelligence,
-                  draft.durability,
-                  draft.speed
-                ].map((v,i) => `
-                  <div class="stat">
-                    <b>${v}</b>
-                    <small>${STAT_NAMES[i]}</small>
-                  </div>
-                `).join('')}
+          reveal.style.display = 'block';
 
-              </div>
-            `;
-
-            reveal.style.display = 'block';
-
-            requestAnimationFrame(() => {
-              reveal.scrollIntoView({
-                behavior:'smooth',
-                block:'nearest'
-              });
+          requestAnimationFrame(() => {
+            reveal.scrollIntoView({
+              behavior:'smooth',
+              block:'nearest'
             });
+          });
 
-          }
+        }
 
-          const finishTimer =
-            setTimeout(() => {
+        const finishTimer = setTimeout(() => {
 
-              rollingStats = false;
+          rollingStats = false;
 
-              document.getElementById(
-                'rerollBtn'
-              ).style.display = 'block';
+          document.getElementById('rerollBtn').style.display = 'block';
+          document.getElementById('confirmBtn').style.display = 'block';
 
-              document.getElementById(
-                'confirmBtn'
-              ).style.display = 'block';
+        },650);
 
-            },650);
+        statRevealTimers.push(finishTimer);
 
-          statRevealTimers.push(
-            finishTimer
-          );
+      },260);
 
-        },250);
-
-      statRevealTimers.push(
-        revealTimer
-      );
-
+      statRevealTimers.push(revealTimer);
       return;
     }
 
     const key = keys[index];
+    const target = draft[key];
 
-    const card =
-      document.querySelector(
-        `#draftStats .stat[data-stat="${key}"]`
-      );
+    rollLabel.textContent = labels[key];
+    rollHint.textContent = 'ROLLING';
+    rollValue.classList.remove('locked');
+    rollValue.classList.add('spinning');
+    rollValue.textContent = rand();
 
-    if(!card){
-      rollingStats = false;
-      return;
-    }
-
-    const strip =
-      card.querySelector('.wheel-strip');
-
-    if(!strip){
-      rollingStats = false;
-      return;
-    }
-
-    card.classList.add('rolling');
-
-    const target =
-      draft[key];
-
-    const targetIndex =
-      58 + (target - 1);
-
-    strip.style.transition = 'none';
-    strip.style.transform =
-      'translateY(calc(-50% + 0px))';
-
-    let value = rand();
-
-    /* Move the actual wheel strip so the numbers visibly fly by. */
-    let wheelPosition = 8;
-
-    const moveWheel = () => {
-      wheelPosition += 1;
-
-      strip.style.transform =
-        `translateY(calc(-50% - ${wheelPosition * 34 - 17}px))`;
-
-      value =
-        ((wheelPosition % 10) + 1);
-    };
-
-    strip.style.transition = 'none';
-    strip.style.transform =
-      `translateY(calc(-50% - ${wheelPosition * 34 - 17}px))`;
-
-    const spinTimer =
-      setInterval(moveWheel,72);
+    const spinTimer = setInterval(() => {
+      rollValue.textContent = rand();
+    },75);
 
     statRollTimer = spinTimer;
 
-    const slowTimer =
-      setTimeout(() => {
+    const stopTimer = setTimeout(() => {
 
-        if(statRollTimer === spinTimer){
-          clearInterval(spinTimer);
-          statRollTimer = null;
-        }
+      if(statRollTimer === spinTimer){
+        clearInterval(spinTimer);
+        statRollTimer = null;
+      }
 
-        const slow =
-          setInterval(moveWheel,145);
+      rollHint.textContent = 'LOCKING IN';
+      rollValue.textContent = target;
+      rollValue.classList.remove('spinning');
 
-        statRollTimer = slow;
+      requestAnimationFrame(() => {
+        rollValue.classList.add('locked');
+      });
 
-        const verySlowTimer =
-          setTimeout(() => {
+      const nextTimer = setTimeout(() => {
 
-            if(statRollTimer === slow){
-              clearInterval(slow);
-              statRollTimer = null;
-            }
+        rollValue.classList.remove('locked');
 
-            strip.style.transition =
-              'transform 1.15s cubic-bezier(.12,.82,.2,1)';
+        rollLabel.textContent = '';
+        rollValue.textContent = '';
+        rollHint.textContent = '';
 
-            strip.style.transform =
-              `translateY(calc(-50% - ${targetIndex * 34 - 17}px))`;
+        const gapTimer = setTimeout(() => {
+          rollNext(index + 1);
+        },260);
 
-            const lockTimer =
-              setTimeout(() => {
+        statRevealTimers.push(gapTimer);
 
-                card.classList.remove('rolling');
-                card.classList.add('locked');
+      },900);
 
-                const nextTimer =
-                  setTimeout(() => {
-                    rollNext(index + 1);
-                  },700);
+      statRevealTimers.push(nextTimer);
 
-                statRevealTimers.push(nextTimer);
+    },2300);
 
-              },1150);
-
-            statRevealTimers.push(lockTimer);
-
-          },1200);
-
-        statRevealTimers.push(verySlowTimer);
-
-      },2800);
-
-    statRevealTimers.push(slowTimer);
+    statRevealTimers.push(stopTimer);
 
   };
 
-  const startTimer =
-    setTimeout(() => {
-      rollNext(0);
-    },300);
+  const startTimer = setTimeout(() => {
+    rollNext(0);
+  },250);
 
   statRevealTimers.push(startTimer);
 
