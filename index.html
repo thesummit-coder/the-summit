@@ -1950,6 +1950,8 @@ const supabase =
   );
 
 
+const GENERATE_PORTRAIT_URL = 'https://ixpvkbbivzpdcdjhfdwu.supabase.co/functions/v1/generate-portrait';
+
 const RECORD_FIGHT_URL =
   SUPABASE_URL +
   '/functions/v1/record-fight';
@@ -2618,69 +2620,116 @@ async function createFighter(){
       .value
       .trim();
 
-
   if(!name){
-
-    return toast(
-      'Enter a fighter name.'
-    );
-
+    return toast('Enter a fighter name.');
   }
-
 
   if(!draft){
-
-    return toast(
-      'Generate stats first.'
-    );
-
+    return toast('Generate stats first.');
   }
 
+  const confirmBtn =
+    document.getElementById('confirmBtn');
+
+  if(confirmBtn){
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'CREATING FIGHTER…';
+  }
 
   const {data,error} =
     await supabase
       .from('fighters')
       .insert({
-
         user_id:user.id,
         name,
-
         strength:draft.strength,
         intelligence:draft.intelligence,
         durability:draft.durability,
         speed:draft.speed,
-
         wins:0,
         losses:0
-
       })
       .select()
       .single();
 
-
   if(error){
+
+    if(confirmBtn){
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'CONFIRM FIGHTER';
+    }
 
     return toast(
       error.code === '23505'
         ? 'You already have a fighter with that name.'
         : error.message
     );
-
   }
 
+  toast('Fighter created. Generating identity…');
 
-  fighters.unshift(data);
+  const session =
+    (await supabase.auth.getSession())
+      .data
+      .session;
 
+  if(!session){
 
-  document.getElementById(
-    'nameInput'
-  ).value = '';
+    if(confirmBtn){
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'CONFIRM FIGHTER';
+    }
 
+    return toast('Please sign in again.');
+  }
 
-  toast(
-    name + ' entered the arena.'
-  );
+  const portraitResponse =
+    await fetch(
+      GENERATE_PORTRAIT_URL,
+      {
+        method:'POST',
+        headers:{
+          'Authorization':
+            'Bearer ' + session.access_token,
+          'Content-Type':'application/json'
+        },
+        body:JSON.stringify({
+          fighter_id:data.id
+        })
+      }
+    );
 
+  const portraitPayload =
+    await portraitResponse
+      .json()
+      .catch(() => ({}));
+
+  if(!portraitResponse.ok){
+
+    fighters.unshift(data);
+
+    if(confirmBtn){
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'CONFIRM FIGHTER';
+    }
+
+    return toast(
+      portraitPayload.error ||
+      'Fighter created, but portrait generation failed.'
+    );
+  }
+
+  fighters.unshift({
+    ...data,
+    portrait_path:
+      data.portrait_path ||
+      null,
+    portrait_generated:true
+  });
+
+  document.getElementById('nameInput').value = '';
+
+  toast(name + ' entered the arena.');
 
   go('fighters');
 
