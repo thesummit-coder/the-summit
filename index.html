@@ -474,131 +474,13 @@ button{
 }
 
 
-/* STAT WHEEL ANIMATION */
-
-.create-card .stat{
-  position:relative;
-  overflow:hidden;
-}
-
-.stat-wheel{
-  position:relative;
-  height:42px;
-  overflow:hidden;
-  margin:0 auto 4px;
-  border-radius:10px;
-  background:linear-gradient(
-    180deg,
-    rgba(4,12,24,.35),
-    rgba(16,35,61,.9),
-    rgba(4,12,24,.35)
-  );
-}
-
-.stat-wheel:before,
-.stat-wheel:after{
-  content:"";
-  position:absolute;
-  left:0;
-  right:0;
-  height:11px;
-  z-index:3;
-  pointer-events:none;
-}
-
-.stat-wheel:before{
-  top:0;
-  background:linear-gradient(
-    180deg,
-    #081528,
-    transparent
-  );
-}
-
-.stat-wheel:after{
-  bottom:0;
-  background:linear-gradient(
-    0deg,
-    #081528,
-    transparent
-  );
-}
-
-.wheel-pointer{
-  position:absolute;
-  left:4px;
-  right:4px;
-  top:50%;
-  height:32px;
-  transform:translateY(-50%);
-  border-top:1px solid rgba(143,194,255,.25);
-  border-bottom:1px solid rgba(143,194,255,.25);
-  z-index:4;
-  pointer-events:none;
-}
-
-.wheel-strip{
-  position:absolute;
-  top:50%;
-  left:0;
-  width:100%;
-  transform:translateY(-50%);
-  transition:transform 1.15s cubic-bezier(.12,.82,.2,1);
-  will-change:transform;
-}
-
-.wheel-number{
-  height:34px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:24px;
-  line-height:34px;
-  font-weight:950;
-  color:var(--blue2);
-}
-
-.stat.rolling{
-  border-color:#3f91ff !important;
-  box-shadow:
-    0 0 0 1px rgba(63,145,255,.10),
-    0 0 25px rgba(63,145,255,.14),
-    inset 0 0 22px rgba(63,145,255,.07);
-  transform:translateY(-1px);
-}
-
-.stat.rolling .wheel-strip{
-  transition:none;
-}
-
-.stat.locked{
-  border-color:var(--blue) !important;
-  box-shadow:
-    0 0 0 1px rgba(63,145,255,.16),
-    0 0 30px rgba(63,145,255,.22),
-    inset 0 0 24px rgba(63,145,255,.08);
-  animation:wheelLock .45s ease-out;
-}
-
-.stat.locked .wheel-number{
-  color:#fff;
-}
-
-@keyframes wheelLock{
-  0%{
-    transform:scale(.9);
-  }
-  55%{
-    transform:scale(1.06);
-  }
-  100%{
-    transform:scale(1);
-  }
-}
-
-/* SINGLE STAT ROLL */
+/* STAT ROULETTE ANIMATION */
 
 .roll-stage{
+  --roll-color:#3f91ff;
+  --roll-rgb:63,145,255;
+  position:relative;
+  overflow:hidden;
   min-height:220px;
   display:flex;
   flex-direction:column;
@@ -606,26 +488,82 @@ button{
   justify-content:center;
   text-align:center;
   padding:22px 14px;
-  border:1px solid #28527e;
+  border:1px solid rgba(var(--roll-rgb),.42);
   border-radius:18px;
   background:
-    radial-gradient(circle at 50% 42%,rgba(63,145,255,.12),transparent 52%),
+    radial-gradient(circle at 50% 42%,rgba(var(--roll-rgb),.13),transparent 52%),
     linear-gradient(145deg,#0d223b,#071426);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.025),
-    0 18px 45px rgba(0,0,0,.20);
+    0 18px 45px rgba(0,0,0,.20),
+    0 0 34px rgba(var(--roll-rgb),.08);
+  transition:
+    border-color .22s ease,
+    box-shadow .22s ease,
+    background .22s ease;
+}
+
+.roll-stage.stat-strength{
+  --roll-color:#ff4d5a;
+  --roll-rgb:255,77,90;
+}
+
+.roll-stage.stat-intelligence{
+  --roll-color:#3f91ff;
+  --roll-rgb:63,145,255;
+}
+
+.roll-stage.stat-durability{
+  --roll-color:#aeb7c4;
+  --roll-rgb:174,183,196;
+}
+
+.roll-stage.stat-speed{
+  --roll-color:#ffd84a;
+  --roll-rgb:255,216,74;
+}
+
+.roll-stage.stage-enter{
+  animation:rollStageEnter .34s cubic-bezier(.16,1,.3,1);
+}
+
+.roll-stage.stage-impact{
+  animation:rollStageImpact .52s cubic-bezier(.16,1,.3,1);
+}
+
+.roll-stage:after{
+  content:"";
+  position:absolute;
+  left:18%;
+  right:18%;
+  top:50%;
+  height:1px;
+  background:linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--roll-rgb),.42),
+    transparent
+  );
+  opacity:.7;
+  pointer-events:none;
 }
 
 .roll-label{
+  position:relative;
+  z-index:2;
   min-height:18px;
-  color:var(--blue2);
+  color:var(--roll-color);
   font-size:11px;
   font-weight:950;
   letter-spacing:2.2px;
   text-transform:uppercase;
+  text-shadow:0 0 14px rgba(var(--roll-rgb),.22);
+  transition:color .22s ease,text-shadow .22s ease;
 }
 
 .roll-value{
+  position:relative;
+  z-index:2;
   min-height:92px;
   display:flex;
   align-items:center;
@@ -635,69 +573,132 @@ button{
   line-height:.95;
   font-weight:950;
   letter-spacing:-5px;
-  color:#fff;
-  text-shadow:0 0 24px rgba(63,145,255,.28);
+  color:var(--roll-color);
+  text-shadow:
+    0 0 18px rgba(var(--roll-rgb),.38),
+    0 0 42px rgba(var(--roll-rgb),.14);
+  font-variant-numeric:tabular-nums;
+  transition:
+    color .18s ease,
+    text-shadow .18s ease;
 }
 
 .roll-value.spinning{
-  animation:rollFloat .22s ease-in-out infinite alternate;
-  filter:blur(.35px);
+  animation:rollRouletteShake .11s ease-in-out infinite alternate;
+  filter:blur(.45px);
 }
 
 .roll-value.spitting{
-  animation:rollSpit .12s cubic-bezier(.2,.8,.3,1);
+  animation:rollRouletteTick .10s cubic-bezier(.2,.8,.3,1);
 }
 
 .roll-value.locked{
-  animation:rollLock .5s cubic-bezier(.16,1,.3,1);
+  animation:rollRouletteLock .58s cubic-bezier(.16,1,.3,1);
   color:#fff;
   text-shadow:
-    0 0 18px rgba(63,145,255,.35),
-    0 0 34px rgba(63,145,255,.18);
+    0 0 16px rgba(var(--roll-rgb),.62),
+    0 0 36px rgba(var(--roll-rgb),.30),
+    0 0 72px rgba(var(--roll-rgb),.14);
 }
 
 .roll-hint{
+  position:relative;
+  z-index:2;
   min-height:15px;
   margin-top:8px;
   color:#607895;
   font-size:9px;
   font-weight:900;
   letter-spacing:1.8px;
+  transition:color .22s ease;
 }
 
-@keyframes rollFloat{
-  from{transform:translateY(-3px) scale(.985);opacity:.72}
-  to{transform:translateY(3px) scale(1.015);opacity:1}
+.roll-stage.stat-strength .roll-hint,
+.roll-stage.stat-intelligence .roll-hint,
+.roll-stage.stat-durability .roll-hint,
+.roll-stage.stat-speed .roll-hint{
+  color:rgba(244,247,251,.46);
 }
 
-@keyframes rollSpit{
+@keyframes rollStageEnter{
   0%{
-    opacity:.35;
-    transform:translateY(-8px) scale(.88);
-    filter:blur(3px);
+    opacity:.62;
+    transform:translateY(8px) scale(.975);
   }
-  55%{
+  60%{
     opacity:1;
-    transform:translateY(2px) scale(1.08);
-    filter:blur(.4px);
+    transform:translateY(-1px) scale(1.008);
   }
   100%{
-    opacity:.92;
-    transform:translateY(0) scale(1);
-    filter:blur(.35px);
+    opacity:1;
+    transform:none;
   }
 }
 
-@keyframes rollLock{
+@keyframes rollStageImpact{
   0%{
-    opacity:.25;
-    transform:scale(.72);
-    filter:blur(4px);
+    transform:scale(.985);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.025),
+      0 18px 45px rgba(0,0,0,.20),
+      0 0 34px rgba(var(--roll-rgb),.08);
+  }
+  42%{
+    transform:scale(1.012);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.035),
+      0 18px 45px rgba(0,0,0,.20),
+      0 0 62px rgba(var(--roll-rgb),.24);
+  }
+  100%{
+    transform:scale(1);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.025),
+      0 18px 45px rgba(0,0,0,.20),
+      0 0 34px rgba(var(--roll-rgb),.08);
+  }
+}
+
+@keyframes rollRouletteShake{
+  from{
+    transform:translateY(-2px) scale(.988);
+  }
+  to{
+    transform:translateY(2px) scale(1.012);
+  }
+}
+
+@keyframes rollRouletteTick{
+  0%{
+    opacity:.30;
+    transform:translateY(-7px) scale(.84);
+    filter:blur(2.6px);
   }
   55%{
     opacity:1;
-    transform:scale(1.12);
+    transform:translateY(2px) scale(1.07);
+    filter:blur(.3px);
+  }
+  100%{
+    opacity:.96;
+    transform:translateY(0) scale(1);
+    filter:blur(.45px);
+  }
+}
+
+@keyframes rollRouletteLock{
+  0%{
+    opacity:.25;
+    transform:scale(.68);
+    filter:blur(4px);
+  }
+  42%{
+    opacity:1;
+    transform:scale(1.15);
     filter:blur(0);
+  }
+  68%{
+    transform:scale(.96);
   }
   100%{
     opacity:1;
@@ -2480,6 +2481,13 @@ function generateStats(){
     speed:'SPEED'
   };
 
+  const stageClasses = {
+    strength:'stat-strength',
+    intelligence:'stat-intelligence',
+    durability:'stat-durability',
+    speed:'stat-speed'
+  };
+
   const rollNext = index => {
 
     if(index >= keys.length){
@@ -2552,62 +2560,151 @@ function generateStats(){
     const key = keys[index];
     const target = draft[key];
 
+    rollStage.className =
+      'roll-stage ' +
+      stageClasses[key] +
+      ' stage-enter';
+
     rollLabel.textContent = labels[key];
-    rollHint.textContent = 'ROLLING';
-    rollValue.classList.remove('locked');
-    rollValue.classList.add('spinning');
-    const spitNumber = value => {
-      rollValue.classList.remove('spitting');
-      void rollValue.offsetWidth;
-      rollValue.textContent = value;
-      rollValue.classList.add('spitting');
-    };
+    rollHint.textContent = 'PREPARING';
+    rollValue.classList.remove('locked','spitting','spinning');
+    rollValue.textContent = '—';
 
-    spitNumber(rand());
+    const enterTimer = setTimeout(() => {
 
-    const spinTimer = setInterval(() => {
-      spitNumber(rand());
-    },90);
+      rollHint.textContent = 'ROLLING';
 
-    statRollTimer = spinTimer;
+      const spitNumber = value => {
 
-    const stopTimer = setTimeout(() => {
+        rollValue.classList.remove('spitting');
+        void rollValue.offsetWidth;
+        rollValue.textContent = value;
+        rollValue.classList.add('spitting');
 
-      if(statRollTimer === spinTimer){
-        clearInterval(spinTimer);
-        statRollTimer = null;
+      };
+
+      rollValue.classList.add('spinning');
+
+      // Phase 1 — rapid roulette: the eye catches individual numbers.
+      const fastTimer = setInterval(() => {
+        spitNumber(rand());
+      },72);
+
+      statRollTimer = fastTimer;
+
+      const mediumTimer = setTimeout(() => {
+
+        if(statRollTimer === fastTimer){
+          clearInterval(fastTimer);
+          statRollTimer = null;
+        }
+
+        // Phase 2 — the wheel visibly starts losing speed.
+        const mediumTimerId = setInterval(() => {
+          spitNumber(rand());
+        },122);
+
+        statRollTimer = mediumTimerId;
+
+        const slowTimer = setTimeout(() => {
+
+          if(statRollTimer === mediumTimerId){
+            clearInterval(mediumTimerId);
+            statRollTimer = null;
+          }
+
+          // Phase 3 — deliberate final drift. It may pass 10 before landing.
+          const suspenseValues = [
+            7,
+            9,
+            10,
+            8,
+            10,
+            Math.max(1, Math.min(10, target))
+          ];
+
+          let suspenseIndex = 0;
+
+          const suspenseStep = () => {
+
+            if(suspenseIndex >= suspenseValues.length){
+              lockRoll();
+              return;
+            }
+
+            spitNumber(suspenseValues[suspenseIndex]);
+
+            const value = suspenseValues[suspenseIndex];
+            suspenseIndex++;
+
+            const delay =
+              suspenseIndex === suspenseValues.length - 1
+                ? 460
+                : 155 + suspenseIndex * 28;
+
+            const suspenseTimer = setTimeout(
+              suspenseStep,
+              delay
+            );
+
+            statRevealTimers.push(suspenseTimer);
+
+          };
+
+          suspenseStep();
+
+        },720);
+
+        statRevealTimers.push(slowTimer);
+
+      },760);
+
+      statRevealTimers.push(mediumTimer);
+
+      function lockRoll(){
+
+        rollHint.textContent = 'LOCKED IN';
+        rollValue.classList.remove('spitting','spinning');
+
+        // Give the landing one final beat before the actual value appears.
+        const landingTimer = setTimeout(() => {
+
+          rollValue.textContent = target;
+
+          requestAnimationFrame(() => {
+            rollValue.classList.add('locked');
+            rollStage.classList.remove('stage-enter');
+            rollStage.classList.add('stage-impact');
+          });
+
+          const nextTimer = setTimeout(() => {
+
+            rollValue.classList.remove('locked');
+            rollStage.classList.remove('stage-impact');
+
+            rollLabel.textContent = '';
+            rollValue.textContent = '';
+            rollHint.textContent = '';
+
+            const gapTimer = setTimeout(() => {
+              rollNext(index + 1);
+            },420);
+
+            statRevealTimers.push(gapTimer);
+
+          },780);
+
+          statRevealTimers.push(nextTimer);
+
+        },120);
+
+        statRevealTimers.push(landingTimer);
+
       }
 
-      rollHint.textContent = 'LOCKING IN';
-      rollValue.classList.remove('spitting');
-      rollValue.textContent = target;
-      rollValue.classList.remove('spinning');
+    },220);
 
-      requestAnimationFrame(() => {
-        rollValue.classList.add('locked');
-      });
-
-      const nextTimer = setTimeout(() => {
-
-        rollValue.classList.remove('locked');
-
-        rollLabel.textContent = '';
-        rollValue.textContent = '';
-        rollHint.textContent = '';
-
-        const gapTimer = setTimeout(() => {
-          rollNext(index + 1);
-        },260);
-
-        statRevealTimers.push(gapTimer);
-
-      },900);
-
-      statRevealTimers.push(nextTimer);
-
-    },2300);
-
-    statRevealTimers.push(stopTimer);
+    statRevealTimers.push(enterTimer);
 
   };
 
@@ -2618,6 +2715,7 @@ function generateStats(){
   statRevealTimers.push(startTimer);
 
 }
+
 
 /* LOGIN */
 
