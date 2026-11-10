@@ -4022,8 +4022,8 @@ async function renderRankingIntelligence(ranked){
     : '<article class="intelligence-card muted"><div class="intelligence-kicker">'+kicker+'</div><div class="intelligence-name">NO DATA YET</div><div class="intelligence-value">BUILD THE STORY</div></article>';
 
   root.innerHTML=
-    card('BIGGEST CLIMBER',climber,(climber.move===1?'+1 rank':'+'+climber.move+' ranks')+' // 7 DAYS','success')+
-    card('BIGGEST FALLER',faller,(faller.move===-1?'-1 rank':faller.move+' ranks')+' // 7 DAYS','danger')+
+    card('BIGGEST CLIMBER',climber,climber?(climber.move===1?'+1 rank':'+'+climber.move+' ranks')+' // 7 DAYS':'NO MOVEMENT YET','success')+
+    card('BIGGEST FALLER',faller,faller?(faller.move===-1?'-1 rank':faller.move+' ranks')+' // 7 DAYS':'NO MOVEMENT YET','danger')+
     card('WIN STREAK',streakLeader&&streakLeader.streak>0?streakLeader:null,(streakLeader?.streak||0)+' STRAIGHT WINS','success')+
     card('LONGEST WIN STREAK',longestLeader&&longestLeader.streak>0?longestLeader:null,(longestLeader?.streak||0)+' TOTAL','gold')+
     card('MOST KOs',null,'FIGHT METHOD NOT TRACKED YET','muted')+
