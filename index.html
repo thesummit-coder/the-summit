@@ -1733,9 +1733,9 @@ button{
   inset:0;
   z-index:75;
   display:flex;
-  align-items:center;
+  align-items:flex-start;
   justify-content:center;
-  padding:22px 12px calc(108px + env(safe-area-inset-bottom));
+  padding:14px 12px calc(108px + env(safe-area-inset-bottom));
   background:
     radial-gradient(circle at 50% 42%,rgba(63,145,255,.09),transparent 34%),
     rgba(2,7,15,.78);
@@ -1754,10 +1754,19 @@ button{
   transition:opacity .24s ease,visibility 0s linear 0s;
 }
 
+.fighter-detail-overlay #fighterDetailCard{
+  width:min(418px,calc(100vw - 24px));
+  height:calc(100vh - 136px);
+  max-height:calc(100vh - 136px);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
 .fighter-detail-overlay .fighter-card{
   position:relative;
-  width:min(418px,calc(100vw - 24px));
-  max-height:calc(100vh - 142px);
+  width:100%;
+  flex:0 0 auto;
   margin:0;
   opacity:0;
   transform:translateY(18px) scale(.955);
@@ -1773,6 +1782,16 @@ button{
 .fighter-detail-overlay.show .fighter-card{
   opacity:1;
   transform:translateY(0) scale(1);
+}
+
+.fighter-detail-overlay #fighterHistory{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding:0 2px 12px;
+  scrollbar-width:thin;
 }
 
 .fighter-detail-overlay .fighter-card:after{
@@ -3905,18 +3924,26 @@ async function renderRankingIntelligence(ranked){
   const request=++rankingIntelligenceRequest;
   root.innerHTML='<div class="intelligence-empty">Analyzing the mountain...</div>';
 
-  const {data,error}=await supabase
-    .from('fights')
-    .select('id,fighter_a,fighter_b,winner,created_at')
-    .order('created_at',{ascending:false});
+  try{
+    const queryPromise=supabase
+      .from('fights')
+      .select('fighter_a,fighter_b,winner,created_at')
+      .order('created_at',{ascending:false})
+      .limit(1000);
 
-  if(request!==rankingIntelligenceRequest)return;
-  if(error){
-    root.innerHTML='<div class="intelligence-empty">Ranking Intelligence could not be loaded.</div>';
-    return;
-  }
+    const result=await Promise.race([
+      queryPromise,
+      new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),8000))
+    ]);
 
-  const fights=data||[];
+    if(request!==rankingIntelligenceRequest)return;
+
+    if(result.error){
+      root.innerHTML='<div class="intelligence-empty">Ranking Intelligence could not be loaded.</div>';
+      return;
+    }
+
+    const fights=result.data||[];
   const byFighter=new Map(ranked.map(f=>[f.id,[]]));
 
   fights.forEach(fight=>{
@@ -4030,6 +4057,10 @@ async function renderRankingIntelligence(ranked){
     card('UNDEFEATED',undefeated,undefeated?(undefeated.wins+' — 0 // UNDEFEATED'):'NO UNDEFEATED FIGHTER','gold')+
     card('FIGHTER OF THE WEEK',fighterOfWeek,fighterOfWeek?(fighterOfWeek.wins+' WIN'+(fighterOfWeek.wins===1?'':'S')+' // LAST 7 DAYS'):'NO WINS THIS WEEK','success')+
     card('LOSER OF THE WEEK',loserOfWeek,loserOfWeek?'LAST 3 FIGHTS: 3 LOSSES':'NO VICTIM FOUND','danger');
+  }catch(_error){
+    if(request!==rankingIntelligenceRequest)return;
+    root.innerHTML='<div class="intelligence-empty">Ranking Intelligence could not be loaded.</div>';
+  }
 }
 function rankingVideoFighter(fighter,rank,total){
   const isOne=rank===1;
