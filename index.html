@@ -3925,33 +3925,28 @@ async function renderRankingIntelligence(ranked){
   root.innerHTML='<div class="intelligence-empty">Analyzing the mountain...</div>';
 
   try{
-    const queryPromise=supabase
+    const {data:fights,error}=await supabase
       .from('fights')
       .select('fighter_a,fighter_b,winner,created_at')
-      .order('created_at',{ascending:false})
-      .limit(1000);
-
-    const result=await Promise.race([
-      queryPromise,
-      new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),8000))
-    ]);
+      .order('created_at',{ascending:false});
 
     if(request!==rankingIntelligenceRequest)return;
 
-    if(result.error){
+    if(error){
+      console.error('Ranking Intelligence query failed:',error);
       root.innerHTML='<div class="intelligence-empty">Ranking Intelligence could not be loaded.</div>';
       return;
     }
 
-    const fights=result.data||[];
+    const fightRows=fights||[];
   const byFighter=new Map(ranked.map(f=>[f.id,[]]));
 
-  fights.forEach(fight=>{
+  fightRows.forEach(fight=>{
     if(byFighter.has(fight.fighter_a))byFighter.get(fight.fighter_a).push(fight);
     if(byFighter.has(fight.fighter_b))byFighter.get(fight.fighter_b).push(fight);
   });
 
-  const resultsFor=(fighterId,source=fights)=>{
+  const resultsFor=(fighterId,source=fightRows)=>{
     return source
       .filter(x=>x.fighter_a===fighterId||x.fighter_b===fighterId)
       .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
@@ -3988,7 +3983,7 @@ async function renderRankingIntelligence(ranked){
     .sort((a,b)=>b.streak-a.streak||rankingScore(b.fighter)-rankingScore(a.fighter))[0];
 
   const weekCutoff=Date.now()-7*24*60*60*1000;
-  const weekFights=fights.filter(f=>new Date(f.created_at).getTime()>=weekCutoff);
+  const weekFights=fightRows.filter(f=>new Date(f.created_at).getTime()>=weekCutoff);
 
   const weeklyWins=new Map(),weeklyLosses=new Map();
   weekFights.forEach(f=>{
@@ -4023,7 +4018,7 @@ async function renderRankingIntelligence(ranked){
     .filter(f=>new Date(f.created_at)<=cutoff)
     .map(f=>{
       let wins=0,losses=0;
-      fights.forEach(fight=>{
+      fightRows.forEach(fight=>{
         if(new Date(fight.created_at)>cutoff)return;
         if(fight.fighter_a!==f.id&&fight.fighter_b!==f.id)return;
         if(fight.winner===f.id)wins++; else losses++;
