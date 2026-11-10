@@ -2319,35 +2319,54 @@ button{
   </div>
 
 
-  <div class="section-title">
+  <div class="fight-hero">
+
+    <div class="fight-hero-kicker">
+      THE SUMMIT // FIGHT
+    </div>
 
     <h2>
-      FIGHT
+      FIGHT NIGHT
     </h2>
 
-    <span class="count">
-      YOU DECIDE
-    </span>
+    <p>
+      Build the matchup. Pick the winner.
+      Every fight changes the mountain.
+    </p>
 
   </div>
 
 
-  <button
-    class="btn primary"
-    onclick="randomFight()">
+  <div class="fight-command-grid">
 
-    RANDOM FIGHT
+    <button
+      class="fight-command primary"
+      onclick="randomFight()">
 
-  </button>
+      <span class="fight-command-kicker">FAST MATCHUP</span>
+      <strong>RANDOM FIGHT</strong>
+      <small>LET THE SUMMIT CHOOSE</small>
+
+    </button>
 
 
-  <button
-    class="btn"
-    onclick="openChoose()">
+    <button
+      class="fight-command"
+      onclick="openChoose()">
 
-    CHOOSE FIGHTERS
+      <span class="fight-command-kicker">MATCHMAKER</span>
+      <strong>CHOOSE FIGHTERS</strong>
+      <small>BUILD YOUR OWN MATCHUP</small>
 
-  </button>
+    </button>
+
+  </div>
+
+
+  <div class="fight-arena-label">
+    <span>THE ARENA</span>
+    <span>YOU DECIDE</span>
+  </div>
 
 
   <div id="fightArea"></div>
@@ -4251,6 +4270,149 @@ function startFight(a,b){
 
 }
 
+
+
+/* FIGHT NIGHT HOME */
+
+.fight-hero{
+  position:relative;
+  overflow:hidden;
+  margin:2px 0 12px;
+  padding:22px 18px 20px;
+  border:1px solid #234b76;
+  border-radius:18px;
+  background:
+    radial-gradient(circle at 88% 12%,rgba(63,145,255,.18),transparent 34%),
+    radial-gradient(circle at 15% 100%,rgba(24,67,111,.18),transparent 42%),
+    linear-gradient(145deg,#102943,#071426);
+  box-shadow:
+    0 18px 42px rgba(0,0,0,.24),
+    inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.fight-hero:after{
+  content:"";
+  position:absolute;
+  width:150px;
+  height:150px;
+  right:-68px;
+  bottom:-92px;
+  border:1px solid rgba(143,194,255,.13);
+  transform:rotate(45deg);
+  pointer-events:none;
+}
+
+.fight-hero-kicker{
+  color:#8fc2ff;
+  font-size:8px;
+  font-weight:950;
+  letter-spacing:2.2px;
+  text-transform:uppercase;
+}
+
+.fight-hero h2{
+  margin:7px 0 6px;
+  font-size:31px;
+  line-height:.95;
+  letter-spacing:-1px;
+  font-weight:950;
+}
+
+.fight-hero p{
+  max-width:300px;
+  margin:0;
+  color:#7f96b2;
+  font-size:10px;
+  line-height:1.55;
+  font-weight:750;
+}
+
+.fight-command-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.fight-command{
+  min-height:112px;
+  padding:14px 12px;
+  border:1px solid #28527e;
+  border-radius:15px;
+  background:linear-gradient(145deg,#102943,#09182b);
+  color:#f4f7fb;
+  text-align:left;
+  box-shadow:
+    0 12px 28px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.025);
+  cursor:pointer;
+}
+
+.fight-command:active{
+  transform:scale(.985);
+}
+
+.fight-command.primary{
+  border-color:#3674b5;
+  background:
+    radial-gradient(circle at 100% 0,rgba(63,145,255,.20),transparent 52%),
+    linear-gradient(145deg,#123b65,#0b2038);
+}
+
+.fight-command-kicker{
+  display:block;
+  margin-bottom:12px;
+  color:#6f86a2;
+  font-size:7px;
+  font-weight:950;
+  letter-spacing:1.5px;
+}
+
+.fight-command.primary .fight-command-kicker{
+  color:#8fc2ff;
+}
+
+.fight-command strong{
+  display:block;
+  font-size:13px;
+  line-height:1.05;
+  letter-spacing:.1px;
+}
+
+.fight-command small{
+  display:block;
+  margin-top:7px;
+  color:#7188a5;
+  font-size:7px;
+  font-weight:850;
+  letter-spacing:.5px;
+  line-height:1.35;
+}
+
+.fight-arena-label{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:18px 2px 7px;
+  color:#607895;
+  font-size:8px;
+  font-weight:950;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+}
+
+.fight-arena-label span:last-child{
+  color:#8fa4bf;
+}
+
+@media(max-width:360px){
+  .fight-command-grid{
+    grid-template-columns:1fr;
+  }
+
+  .fight-command{
+    min-height:88px;
+  }
+}
 
 
 /* FIGHTER CHOICE */
