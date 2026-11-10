@@ -2678,6 +2678,35 @@ function summitShowIdentityLoading(){
   `);
 }
 
+async function waitForPortraitReady(fighter){
+  const url = portraitUrl(fighter);
+
+  if(!url){
+    return false;
+  }
+
+  return await new Promise(resolve => {
+    const img = new Image();
+    let settled = false;
+
+    const finish = ready => {
+      if(settled) return;
+      settled = true;
+      img.onload = null;
+      img.onerror = null;
+      resolve(ready);
+    };
+
+    img.onload = () => finish(true);
+    img.onerror = () => finish(false);
+    img.src = url;
+
+    if(img.complete){
+      finish(img.naturalWidth > 0);
+    }
+  });
+}
+
 function summitShowFinalCard(fighter){
   restoreRollStage();
   summitScene(card(fighter,false));
@@ -3327,6 +3356,11 @@ async function createFighter(){
       null,
     portrait_generated:true
   };
+
+  // Do not reveal the final fighter card until the portrait itself
+  // has finished loading in the browser. The Identity Forging scene
+  // intentionally remains on screen for the entire wait.
+  await waitForPortraitReady(fighter);
 
   fighters.unshift(fighter);
 
