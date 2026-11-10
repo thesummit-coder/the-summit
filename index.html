@@ -1671,7 +1671,7 @@ button{
   transform:translateX(-50%);
   width:min(410px,calc(100% - 20px));
   display:none;
-  grid-template-columns:repeat(4,1fr);
+  grid-template-columns:repeat(3,1fr);
   gap:7px;
   padding:7px;
   background:rgba(5,13,25,.88);
@@ -2093,79 +2093,6 @@ button{
 
 
 
-<!-- FIGHTERS -->
-
-<section id="fighters" class="screen">
-
-  <div class="screen-top">
-
-    <div class="brand">
-      THE <span>SUMMIT</span>
-    </div>
-
-    <div class="fighter-header-actions">
-      <button
-        id="championModeBtn"
-        class="logout champion-mode-btn"
-        onclick="toggleChampionMode()">
-
-        CHAMPION
-
-      </button>
-
-      <button
-        id="deleteModeBtn"
-        class="logout delete-mode-btn"
-        onclick="toggleDeleteMode()">
-
-        DELETE
-
-      </button>
-    </div>
-
-  </div>
-
-
-  <div class="section-title">
-
-    <h2>
-      FIGHTERS
-    </h2>
-
-    <span
-      id="fighterCount"
-      class="count">
-
-      0
-
-    </span>
-
-  </div>
-
-
-  <div id="fighterList"></div>
-
-</section>
-
-
-
-<!-- RANKINGS -->
-<section id="rankings" class="screen rankings-screen">
-  <div class="screen-top">
-    <div class="brand">THE <span>SUMMIT</span></div>
-    <span class="count">POWER RANKINGS</span>
-  </div>
-  <div class="section-title">
-    <h2>RANKINGS</h2>
-    <span id="rankingCount" class="count">0</span>
-  </div>
-  <p class="ranking-intro">
-    The current order of the Summit. The Top 10 are the fighters featured in Ranking Videos.
-    Scroll further to see the rest of the division.
-  </p>
-  <div id="rankingList" class="ranking-list"></div>
-</section>
-
 <!-- FIGHT -->
 
 <section id="fight" class="screen">
@@ -2270,19 +2197,6 @@ button{
     </strong>
 
     CREATE
-
-  </button>
-
-
-  <button
-    data-nav="fighters"
-    onclick="go('fighters')">
-
-    <strong>
-      ♙
-    </strong>
-
-    FIGHTERS
 
   </button>
 
@@ -2521,7 +2435,7 @@ function showApp(){
   nav.style.display = 'grid';
 
 
-  go('fighters');
+  go('rankings');
 
 
   requestAnimationFrame(() => {
@@ -3668,7 +3582,15 @@ function rankingRow(f,index){
     ? '<img src="'+portraitUrl(f)+'" alt="'+esc(f.name)+' portrait" loading="lazy">'
     : '<div class="ranking-portrait-empty">SUMMIT</div>';
   const kicker=f.champion?'SUMMIT CHAMPION':rank<=10?'TOP 10 CONTENDER':'CONTENDER';
-  return '<article class="'+classes+'" onclick="openFighterDetails(\''+f.id+'\')">'+
+
+  let action='openFighterDetails(\''+f.id+'\')';
+  if(f.user_id===user.id && deleteMode){
+    action='deleteFighter(\''+f.id+'\')';
+  }else if(f.user_id===user.id && championMode){
+    action='setChampion(\''+f.id+'\')';
+  }
+
+  return '<article class="'+classes+'" onclick="'+action+'">'+
     '<div class="ranking-position">#'+String(rank).padStart(2,'0')+'</div>'+
     '<div class="ranking-portrait">'+portrait+'</div>'+
     '<div class="ranking-main"><div class="ranking-kicker">'+kicker+'</div><div class="ranking-name">'+esc(f.name)+'</div><div class="ranking-record"><span class="w">W '+String(f.wins).padStart(2,'0')+'</span><span> — </span><span class="l">L '+String(f.losses).padStart(2,'0')+'</span></div></div>'+
@@ -3699,7 +3621,7 @@ function toggleDeleteMode(){
 
   deleteMode = !deleteMode;
 
-  renderFighters();
+  renderRankings();
 
 }
 
@@ -3711,7 +3633,7 @@ function toggleChampionMode(){
 
   championMode = !championMode;
 
-  renderFighters();
+  renderRankings();
 
 }
 
@@ -3739,7 +3661,7 @@ async function setChampion(id){
   await loadFighters();
 
   championMode = false;
-  renderFighters();
+  renderRankings();
 
   toast(fighter.name + ' is now the Summit Champion.');
 
@@ -3791,7 +3713,7 @@ async function deleteFighter(id){
 
 
   deleteMode = false;
-  renderFighters();
+  renderRankings();
 
 
   toast(
