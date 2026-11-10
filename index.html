@@ -2589,6 +2589,15 @@ function summitScene(html){
   }
 }
 
+function restoreRollStage(){
+  const rollStage = document.getElementById('rollStage');
+  const draftArea = document.getElementById('draftArea');
+
+  if(rollStage && draftArea && rollStage.parentElement !== draftArea){
+    draftArea.insertBefore(rollStage,draftArea.firstChild);
+  }
+}
+
 function enterSummitMode(){
   summitMode = true;
 
@@ -2632,6 +2641,7 @@ function enterSummitMode(){
 }
 
 async function exitSummitMode(){
+  restoreRollStage();
   summitMode = false;
 
   if(summitExitTimer){
@@ -2658,6 +2668,8 @@ async function exitSummitMode(){
 }
 
 function summitShowIdentityLoading(){
+  restoreRollStage();
+
   summitScene(`
     <div class="summit-logo-mark" aria-hidden="true"></div>
     <div class="summit-overline">THE SUMMIT</div>
@@ -2667,6 +2679,7 @@ function summitShowIdentityLoading(){
 }
 
 function summitShowFinalCard(fighter){
+  restoreRollStage();
   summitScene(card(fighter,false));
 }
 
