@@ -775,6 +775,220 @@ button{
   }
 }
 
+/* SUMMIT MODE — CREATE VIDEO PERFORMANCE */
+
+.summit-mode{
+  overflow:hidden !important;
+}
+
+.summit-mode .app{
+  width:100vw;
+  max-width:none;
+  min-height:100dvh;
+  padding:0;
+  background:#02070f;
+}
+
+.summit-mode .screen,
+.summit-mode .nav,
+.summit-mode #toast,
+.summit-mode #modal,
+.summit-mode #fighterDetailOverlay{
+  visibility:hidden;
+}
+
+.summit-overlay{
+  position:fixed;
+  inset:0;
+  z-index:120;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  padding:
+    max(18px,env(safe-area-inset-top))
+    16px
+    max(18px,env(safe-area-inset-bottom));
+  background:
+    radial-gradient(circle at 50% 40%,rgba(63,145,255,.13),transparent 36%),
+    radial-gradient(circle at 50% 115%,rgba(20,54,94,.22),transparent 48%),
+    #02070f;
+  color:#f4f7fb;
+  opacity:0;
+  pointer-events:none;
+  visibility:hidden;
+  transition:opacity .26s ease,visibility 0s linear .26s;
+}
+
+.summit-overlay.show{
+  opacity:1;
+  pointer-events:auto;
+  visibility:visible;
+  transition:opacity .26s ease,visibility 0s linear 0s;
+}
+
+.summit-performance{
+  width:min(100%,430px);
+  min-height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+}
+
+.summit-scene{
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+
+.summit-logo-mark{
+  width:72px;
+  height:72px;
+  position:relative;
+  display:grid;
+  place-items:center;
+  margin-bottom:22px;
+  border:1px solid rgba(143,194,255,.20);
+  clip-path:polygon(50% 0,100% 100%,0 100%);
+  background:
+    linear-gradient(135deg,rgba(63,145,255,.20),rgba(8,21,40,.12));
+  box-shadow:
+    0 0 36px rgba(63,145,255,.12),
+    inset 0 0 20px rgba(63,145,255,.06);
+  animation:summitMarkIn .7s cubic-bezier(.16,1,.3,1);
+}
+
+.summit-logo-mark:before{
+  content:"";
+  position:absolute;
+  left:17px;
+  right:17px;
+  top:20px;
+  bottom:15px;
+  border-left:1px solid rgba(143,194,255,.70);
+  border-right:1px solid rgba(63,145,255,.30);
+  transform:skewX(-18deg);
+}
+
+.summit-overline{
+  color:#8fc2ff;
+  font-size:10px;
+  font-weight:950;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  margin-bottom:11px;
+}
+
+.summit-headline{
+  margin:0;
+  font-size:30px;
+  line-height:.98;
+  font-weight:950;
+  letter-spacing:-1px;
+  text-transform:uppercase;
+  text-shadow:0 0 28px rgba(63,145,255,.16);
+}
+
+.summit-subline{
+  min-height:18px;
+  margin-top:12px;
+  color:#607895;
+  font-size:10px;
+  font-weight:850;
+  letter-spacing:1.8px;
+  text-transform:uppercase;
+}
+
+.summit-performance .roll-stage{
+  width:100%;
+  min-height:250px;
+  margin:0;
+}
+
+.summit-performance .reveal-card{
+  width:100%;
+  margin:0;
+  text-align:left;
+  animation:summitRevealIn .62s cubic-bezier(.16,1,.3,1);
+}
+
+.summit-performance .reveal-card .stats{
+  margin-top:13px;
+}
+
+.summit-performance .fighter-card{
+  width:100%;
+  max-height:min(72vh,560px);
+  margin:0;
+  text-align:left;
+  animation:summitRevealIn .62s cubic-bezier(.16,1,.3,1);
+}
+
+.summit-performance .fighter-portrait{
+  min-height:310px;
+}
+
+.summit-outro{
+  animation:summitRevealIn .55s cubic-bezier(.16,1,.3,1);
+}
+
+.summit-outro .summit-headline{
+  font-size:28px;
+}
+
+.summit-outro .summit-subline{
+  color:#8fa4bf;
+  margin-top:15px;
+}
+
+.summit-error{
+  color:#ff9aa7;
+  font-size:12px;
+  line-height:1.5;
+  max-width:320px;
+}
+
+@keyframes summitMarkIn{
+  from{
+    opacity:0;
+    transform:translateY(14px) scale(.75);
+  }
+  to{
+    opacity:1;
+    transform:none;
+  }
+}
+
+@keyframes summitRevealIn{
+  from{
+    opacity:0;
+    transform:translateY(18px) scale(.965);
+  }
+  to{
+    opacity:1;
+    transform:none;
+  }
+}
+
+@media (max-width:360px){
+  .summit-performance .fighter-portrait{
+    min-height:280px;
+  }
+
+  .summit-performance .fighter-card{
+    max-height:68vh;
+  }
+
+  .summit-headline{
+    font-size:27px;
+  }
+}
+
+
 /* FIGHTERS */
 
 .fighter-portrait img{
@@ -1821,7 +2035,7 @@ button{
       class="btn primary generate-button"
       onclick="generateStats()">
 
-      GENERATE STATS
+      GENERATE FIGHTER
 
     </button>
 
@@ -1969,6 +2183,20 @@ button{
 
 </main>
 
+
+
+<!-- SUMMIT CREATE PERFORMANCE -->
+
+<div
+  id="summitOverlay"
+  class="summit-overlay"
+  aria-hidden="true">
+
+  <div class="summit-performance">
+    <div id="summitScene" class="summit-scene"></div>
+  </div>
+
+</div>
 
 
 <!-- FIGHTER DETAIL -->
@@ -2349,11 +2577,123 @@ function clearStatRoll(){
 
 
 
+/* SUMMIT CREATE MODE */
+
+let summitMode = false;
+let summitExitTimer = null;
+
+function summitScene(html){
+  const scene = document.getElementById('summitScene');
+  if(scene){
+    scene.innerHTML = html;
+  }
+}
+
+function enterSummitMode(){
+  summitMode = true;
+
+  if(summitExitTimer){
+    clearTimeout(summitExitTimer);
+    summitExitTimer = null;
+  }
+
+  document.body.classList.add('summit-mode');
+
+  const overlay = document.getElementById('summitOverlay');
+
+  if(overlay){
+    overlay.setAttribute('aria-hidden','false');
+    overlay.classList.add('show');
+  }
+
+  summitScene(`
+    <div class="summit-logo-mark" aria-hidden="true"></div>
+    <div class="summit-overline">THE SUMMIT</div>
+    <h1 class="summit-headline">A NEW CONTENDER<br>IS ENTERING.</h1>
+    <div class="summit-subline">THE WORLD BEGINS HERE</div>
+  `);
+
+  // Works where the browser supports the Fullscreen API.
+  // The overlay itself still gives us the cinematic viewport everywhere else.
+  try{
+    const root = document.documentElement;
+
+    if(root.requestFullscreen){
+      const result = root.requestFullscreen({
+        navigationUI:'hide'
+      });
+
+      if(result && typeof result.catch === 'function'){
+        result.catch(() => {});
+      }
+    }
+  }catch(_error){}
+
+}
+
+async function exitSummitMode(){
+  summitMode = false;
+
+  if(summitExitTimer){
+    clearTimeout(summitExitTimer);
+    summitExitTimer = null;
+  }
+
+  const overlay = document.getElementById('summitOverlay');
+
+  if(overlay){
+    overlay.classList.remove('show');
+    overlay.setAttribute('aria-hidden','true');
+  }
+
+  document.body.classList.remove('summit-mode');
+
+  try{
+    if(document.fullscreenElement && document.exitFullscreen){
+      await document.exitFullscreen();
+    }
+  }catch(_error){}
+
+  summitScene('');
+}
+
+function summitShowIdentityLoading(){
+  summitScene(`
+    <div class="summit-logo-mark" aria-hidden="true"></div>
+    <div class="summit-overline">THE SUMMIT</div>
+    <h1 class="summit-headline">IDENTITY<br>FORGING.</h1>
+    <div class="summit-subline">GENERATING FIGHTER IDENTITY</div>
+  `);
+}
+
+function summitShowFinalCard(fighter){
+  summitScene(card(fighter,false));
+}
+
+function summitShowOutro(){
+  summitScene(`
+    <div class="summit-outro">
+      <div class="summit-overline">THE SUMMIT</div>
+      <h1 class="summit-headline">THE STORY<br>BEGINS NOW.</h1>
+      <div class="summit-subline">CONTENDER ENTERED</div>
+    </div>
+  `);
+
+  summitExitTimer = setTimeout(() => {
+    exitSummitMode();
+  },2200);
+}
+
+
 /* CREATE RESET */
 
 function resetCreate(){
 
   clearStatRoll();
+
+  if(summitMode){
+    exitSummitMode();
+  }
 
   draft = null;
 
@@ -2390,6 +2730,11 @@ function resetCreate(){
 
   if(rollStage){
     rollStage.style.display = 'none';
+
+    const draftArea = document.getElementById('draftArea');
+    if(draftArea && rollStage.parentElement !== draftArea){
+      draftArea.insertBefore(rollStage, draftArea.firstChild);
+    }
   }
 
   const rollLabel =
@@ -2429,8 +2774,15 @@ function statLabel(key){
 
 function generateStats(){
 
-  if(rollingStats){
+  if(rollingStats || summitMode){
     return;
+  }
+
+  const nameInput = document.getElementById('nameInput');
+  const name = nameInput?.value.trim();
+
+  if(!name){
+    return toast('Enter a fighter name.');
   }
 
   clearStatRoll();
@@ -2444,6 +2796,8 @@ function generateStats(){
 
   rollingStats = true;
 
+  enterSummitMode();
+
   const rollStage = document.getElementById('rollStage');
   const rollLabel = document.getElementById('rollLabel');
   const rollValue = document.getElementById('rollValue');
@@ -2451,7 +2805,7 @@ function generateStats(){
 
   if(!rollStage || !rollLabel || !rollValue){
     rollingStats = false;
-    return;
+    return exitSummitMode();
   }
 
   document.getElementById('draftArea').style.display = 'block';
@@ -2466,6 +2820,18 @@ function generateStats(){
     revealCard.style.display = 'none';
     revealCard.innerHTML = '';
   }
+
+  const introTimer = setTimeout(() => {
+
+    summitScene(`
+      <div class="summit-overline">THE SUMMIT</div>
+      <h1 class="summit-headline">${esc(name)}</h1>
+      <div class="summit-subline">A NEW CONTENDER HAS ENTERED</div>
+    `);
+
+  },2100);
+
+  statRevealTimers.push(introTimer);
 
   const keys = [
     'strength',
@@ -2494,71 +2860,28 @@ function generateStats(){
 
       rollStage.style.display = 'none';
 
-      const revealTimer = setTimeout(() => {
+      summitShowIdentityLoading();
 
-        const reveal = document.getElementById('revealCard');
+      const finishTimer = setTimeout(() => {
+        rollingStats = false;
+        createFighter();
+      },700);
 
-        const name =
-          document.getElementById('nameInput').value.trim() ||
-          'Unnamed Fighter';
-
-        if(reveal){
-
-          reveal.innerHTML = `
-            <div class="reveal-top">
-              <span class="reveal-kicker">Fighter Locked</span>
-              <span class="reveal-ready">READY</span>
-            </div>
-
-            <div class="reveal-name">
-              ${esc(name)}
-            </div>
-
-            <div class="stats">
-              ${[
-                draft.strength,
-                draft.intelligence,
-                draft.durability,
-                draft.speed
-              ].map((v,i) => `
-                <div class="stat">
-                  <b>${v}</b>
-                  <small>${STAT_NAMES[i]}</small>
-                </div>
-              `).join('')}
-            </div>
-          `;
-
-          reveal.style.display = 'block';
-
-          requestAnimationFrame(() => {
-            reveal.scrollIntoView({
-              behavior:'smooth',
-              block:'nearest'
-            });
-          });
-
-        }
-
-        const finishTimer = setTimeout(() => {
-
-          rollingStats = false;
-
-          document.getElementById('rerollBtn').style.display = 'block';
-          document.getElementById('confirmBtn').style.display = 'block';
-
-        },650);
-
-        statRevealTimers.push(finishTimer);
-
-      },260);
-
-      statRevealTimers.push(revealTimer);
+      statRevealTimers.push(finishTimer);
       return;
     }
 
     const key = keys[index];
     const target = draft[key];
+
+    // The stat roulette stays in the main create markup so the proven
+    // animation remains unchanged; Summit Mode simply presents it fullscreen.
+    summitScene('');
+    const summitSceneEl = document.getElementById('summitScene');
+
+    if(summitSceneEl){
+      summitSceneEl.appendChild(rollStage);
+    }
 
     rollStage.className =
       'roll-stage ' +
@@ -2585,7 +2908,6 @@ function generateStats(){
 
       rollValue.classList.add('spinning');
 
-      // Phase 1 — rapid roulette: the eye catches individual numbers.
       const fastTimer = setInterval(() => {
         spitNumber(rand());
       },72);
@@ -2599,7 +2921,6 @@ function generateStats(){
           statRollTimer = null;
         }
 
-        // Phase 2 — the wheel visibly starts losing speed.
         const mediumTimerId = setInterval(() => {
           spitNumber(rand());
         },122);
@@ -2613,7 +2934,6 @@ function generateStats(){
             statRollTimer = null;
           }
 
-          // Phase 3 — deliberate final drift. It may pass 10 before landing.
           const suspenseValues = [
             7,
             9,
@@ -2634,7 +2954,6 @@ function generateStats(){
 
             spitNumber(suspenseValues[suspenseIndex]);
 
-            const value = suspenseValues[suspenseIndex];
             suspenseIndex++;
 
             const delay =
@@ -2666,7 +2985,6 @@ function generateStats(){
         rollHint.textContent = 'LOCKED IN';
         rollValue.classList.remove('spitting','spinning');
 
-        // Give the landing one final beat before the actual value appears.
         const landingTimer = setTimeout(() => {
 
           rollValue.textContent = target;
@@ -2709,8 +3027,9 @@ function generateStats(){
   };
 
   const startTimer = setTimeout(() => {
+    // Move the proven roll stage into Summit Mode after the intro.
     rollNext(0);
-  },250);
+  },2500);
 
   statRevealTimers.push(startTimer);
 
@@ -2882,20 +3201,9 @@ async function createFighter(){
       .value
       .trim();
 
-  if(!name){
-    return toast('Enter a fighter name.');
-  }
-
-  if(!draft){
-    return toast('Generate stats first.');
-  }
-
-  const confirmBtn =
-    document.getElementById('confirmBtn');
-
-  if(confirmBtn){
-    confirmBtn.disabled = true;
-    confirmBtn.textContent = 'CREATING FIGHTER…';
+  if(!name || !draft){
+    rollingStats = false;
+    return summitShowOutro();
   }
 
   const {data,error} =
@@ -2916,19 +3224,25 @@ async function createFighter(){
 
   if(error){
 
-    if(confirmBtn){
-      confirmBtn.disabled = false;
-      confirmBtn.textContent = 'CONFIRM FIGHTER';
-    }
+    rollingStats = false;
 
-    return toast(
-      error.code === '23505'
-        ? 'You already have a fighter with that name.'
-        : error.message
-    );
+    summitScene(`
+      <div class="summit-overline">THE SUMMIT</div>
+      <h1 class="summit-headline">CREATION<br>FAILED.</h1>
+      <div class="summit-subline summit-error">${esc(error.code === '23505' ? 'A fighter with this name already exists.' : error.message)}</div>
+    `);
+
+    summitExitTimer = setTimeout(() => {
+      exitSummitMode();
+      toast(error.code === '23505'
+        ? 'A fighter with this name already exists.'
+        : error.message);
+    },2200);
+
+    return;
   }
 
-  toast('Fighter created. Generating identity…');
+  summitShowIdentityLoading();
 
   const session =
     (await supabase.auth.getSession())
@@ -2937,12 +3251,20 @@ async function createFighter(){
 
   if(!session){
 
-    if(confirmBtn){
-      confirmBtn.disabled = false;
-      confirmBtn.textContent = 'CONFIRM FIGHTER';
-    }
+    rollingStats = false;
 
-    return toast('Please sign in again.');
+    summitScene(`
+      <div class="summit-overline">THE SUMMIT</div>
+      <h1 class="summit-headline">SESSION<br>EXPIRED.</h1>
+      <div class="summit-subline summit-error">Please sign in again.</div>
+    `);
+
+    summitExitTimer = setTimeout(() => {
+      exitSummitMode();
+      toast('Please sign in again.');
+    },2200);
+
+    return;
   }
 
   const portraitResponse =
@@ -2969,40 +3291,45 @@ async function createFighter(){
   if(!portraitResponse.ok){
 
     fighters.unshift(data);
+    rollingStats = false;
 
-    if(confirmBtn){
-      confirmBtn.disabled = false;
-      confirmBtn.textContent = 'CONFIRM FIGHTER';
-    }
+    summitScene(`
+      <div class="summit-overline">THE SUMMIT</div>
+      <h1 class="summit-headline">IDENTITY<br>INCOMPLETE.</h1>
+      <div class="summit-subline summit-error">${esc(portraitPayload.error || 'Portrait generation failed.')}</div>
+    `);
 
-    const portraitDetail =
-      portraitPayload.detail
-        ? ' — ' + portraitPayload.detail
-        : '';
+    summitExitTimer = setTimeout(() => {
+      exitSummitMode();
+      toast('Fighter created, but portrait generation failed.');
+    },2500);
 
-    return toast(
-      (portraitPayload.error ||
-      'Fighter created, but portrait generation failed.') +
-      portraitDetail
-    );
+    return;
   }
 
-  fighters.unshift({
+  const fighter = {
     ...data,
     portrait_path:
       portraitPayload.portrait_path ||
       null,
     portrait_generated:true
-  });
+  };
+
+  fighters.unshift(fighter);
 
   document.getElementById('nameInput').value = '';
 
-  toast(name + ' entered the arena.');
+  rollingStats = false;
 
-  go('fighters');
+  summitShowFinalCard(fighter);
+
+  const outroTimer = setTimeout(() => {
+    summitShowOutro();
+  },4200);
+
+  statRevealTimers.push(outroTimer);
 
 }
-
 
 
 /* PORTRAIT URL */
