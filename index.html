@@ -1854,6 +1854,18 @@ button{
 .ranking-score{text-align:right;color:#6f86a2;font-size:8px;font-weight:900;letter-spacing:.6px}
 .ranking-score strong{display:block;color:#cbd7e6;font-size:14px;letter-spacing:0}
 .ranking-section-label{margin:22px 2px 9px;color:#607995;font-size:9px;font-weight:950;letter-spacing:1.4px}
+.ranking-video-btn{margin:0 0 14px;box-shadow:0 10px 24px rgba(63,145,255,.10)}
+.ranking-video-btn:active{transform:scale(.985)}
+.ranking-video-fighter{width:100%;text-align:center;animation:summitRevealIn .62s cubic-bezier(.16,1,.3,1)}
+.ranking-video-kicker{color:#8fc2ff;font-size:10px;font-weight:950;letter-spacing:2.4px;text-transform:uppercase;margin-bottom:10px}
+.ranking-video-rank{font-size:58px;line-height:.9;font-weight:950;letter-spacing:-3px;color:#f4f7fb;text-shadow:0 0 30px rgba(63,145,255,.20);margin-bottom:6px}
+.ranking-video-name{font-size:25px;line-height:1;font-weight:950;letter-spacing:-.8px;margin-bottom:16px}
+.ranking-video-card{width:100%;max-height:min(67vh,540px);margin:0;text-align:left}
+.ranking-video-card .fighter-portrait{min-height:270px}
+.ranking-video-fighter.rank-one .ranking-video-kicker{color:#ffe477}
+.ranking-video-fighter.rank-one .ranking-video-rank{color:#ffe477;text-shadow:0 0 34px rgba(255,216,74,.20)}
+.ranking-video-fighter.rank-one .ranking-video-card{border-color:#d6ad3a;box-shadow:0 22px 55px rgba(0,0,0,.34),0 0 34px rgba(255,216,74,.10)}
+.ranking-video-progress{margin-top:14px;color:#607895;font-size:9px;font-weight:900;letter-spacing:1.8px;text-transform:uppercase}
 
 </style>
 </head>
@@ -2127,6 +2139,12 @@ button{
     <h2>RANKINGS</h2>
     <span id="rankingCount" class="count">0</span>
   </div>
+
+  <button
+    class="btn primary ranking-video-btn"
+    onclick="generateRankingVideo()">
+    GENERATE RANKING VIDEO
+  </button>
 
   <div id="rankingList" class="ranking-list"></div>
 
@@ -3650,6 +3668,73 @@ function renderRankings(){
   const topTen=ranked.slice(0,10),rest=ranked.slice(10);
   list.innerHTML=topTen.map(rankingRow).join('')+
     (rest.length?'<div class="ranking-section-label">THE REST OF THE SUMMIT</div>'+rest.map((f,i)=>rankingRow(f,i+10)).join(''):'');
+}
+function rankingVideoFighter(fighter,rank,total){
+  const isOne=rank===1;
+  const champion=!!fighter.champion;
+  const label=isOne?(champion?'SUMMIT CHAMPION':'NUMBER ONE'):'POWER RANKINGS';
+  return '<div class="ranking-video-fighter'+(isOne?' rank-one':'')+'">'+
+    '<div class="ranking-video-kicker">'+label+'</div>'+
+    '<div class="ranking-video-rank">#'+String(rank).padStart(2,'0')+'</div>'+
+    '<div class="ranking-video-name">'+esc(fighter.name)+'</div>'+
+    '<div class="ranking-video-card">'+card(fighter,false)+'</div>'+
+    '<div class="ranking-video-progress">THE SUMMIT // '+rank+' OF '+total+'</div>'+
+    '</div>';
+}
+
+function generateRankingVideo(){
+  const topTen=getRankedFighters().slice(0,10);
+  if(!topTen.length){
+    return toast('Create at least one fighter first.');
+  }
+  if(summitMode)return;
+
+  summitMode=true;
+  if(summitExitTimer){clearTimeout(summitExitTimer);summitExitTimer=null;}
+  document.body.classList.add('summit-mode');
+
+  const overlay=document.getElementById('summitOverlay');
+  if(overlay){
+    overlay.setAttribute('aria-hidden','false');
+    overlay.classList.add('show');
+  }
+
+  try{
+    const root=document.documentElement;
+    if(root.requestFullscreen){
+      const result=root.requestFullscreen({navigationUI:'hide'});
+      if(result&&typeof result.catch==='function')result.catch(()=>{});
+    }
+  }catch(_error){}
+
+  summitScene(
+    '<div class="summit-logo-mark" aria-hidden="true"></div>'+
+    '<div class="summit-overline">THE SUMMIT</div>'+
+    '<h1 class="summit-headline">POWER<br>RANKINGS.</h1>'+
+    '<div class="summit-subline">THE TOP TEN CONTENDERS</div>'
+  );
+
+  setTimeout(()=>playRankingVideoFighter(0),3200);
+
+  function playRankingVideoFighter(index){
+    const fighter=topTen[index];
+    const rank=index+1;
+    if(!fighter){
+      summitScene(
+        '<div class="summit-outro">'+
+        '<div class="summit-overline">THE SUMMIT</div>'+
+        '<h1 class="summit-headline">THE TOP<br>IS EARNED.</h1>'+
+        '<div class="summit-subline">RANKINGS ESTABLISHED</div>'+
+        '</div>'
+      );
+      summitExitTimer=setTimeout(()=>exitSummitMode(),2600);
+      return;
+    }
+
+    summitScene(rankingVideoFighter(fighter,rank,topTen.length));
+    const hold=rank===1?4200:2500;
+    summitExitTimer=setTimeout(()=>playRankingVideoFighter(index+1),hold);
+  }
 }
 
 /* DELETE MODE */
