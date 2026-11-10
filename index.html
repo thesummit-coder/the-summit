@@ -1671,7 +1671,7 @@ button{
   transform:translateX(-50%);
   width:min(410px,calc(100% - 20px));
   display:none;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:repeat(4,1fr);
   gap:7px;
   padding:7px;
   background:rgba(5,13,25,.88);
@@ -1828,6 +1828,32 @@ button{
   min-height:16px;
   margin-top:8px
 }
+
+
+/* RANKINGS */
+.rankings-screen{padding-bottom:120px}
+.ranking-intro{margin:0 0 16px;color:var(--muted);font-size:12px;line-height:1.5;max-width:390px}
+.ranking-list{display:flex;flex-direction:column;gap:10px}
+.ranking-row{position:relative;display:grid;grid-template-columns:42px 72px minmax(0,1fr) auto;align-items:center;gap:11px;min-height:88px;padding:9px 11px 9px 8px;background:linear-gradient(145deg,#0a172a,#081322);border:1px solid #173250;border-radius:16px;box-shadow:0 10px 24px rgba(0,0,0,.18);overflow:hidden}
+.ranking-row.top-ten{border-color:#21466d}
+.ranking-row.rank-one{min-height:104px;background:radial-gradient(circle at 78% 35%,rgba(63,145,255,.12),transparent 42%),linear-gradient(145deg,#10233b,#091525);border-color:#3a6fa8;box-shadow:0 16px 34px rgba(0,0,0,.26),0 0 26px rgba(63,145,255,.06)}
+.ranking-row.champion{border-color:rgba(215,174,78,.62);box-shadow:0 14px 34px rgba(0,0,0,.25),0 0 24px rgba(215,174,78,.08)}
+.ranking-position{text-align:center;color:#6f86a2;font-size:10px;font-weight:950;letter-spacing:.8px}
+.rank-one .ranking-position{color:#fff;font-size:13px}
+.ranking-portrait{width:72px;height:70px;border-radius:11px;overflow:hidden;background:#091321;border:1px solid #1b3858}
+.rank-one .ranking-portrait{width:76px;height:84px;border-color:#315f91}
+.ranking-portrait img{width:100%;height:100%;object-fit:cover;object-position:center 24%;display:block}
+.ranking-portrait-empty{width:100%;height:100%;display:grid;place-items:center;color:#49627f;font-size:8px;font-weight:900;letter-spacing:.8px}
+.ranking-main{min-width:0}
+.ranking-kicker{color:#6f89a7;font-size:8px;font-weight:950;letter-spacing:1px;margin-bottom:3px}
+.ranking-row.champion .ranking-kicker{color:#d7ae4e}
+.ranking-name{color:#f4f7fb;font-size:16px;font-weight:950;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-one .ranking-name{font-size:19px}
+.ranking-record{margin-top:5px;color:#8197b1;font-size:9px;font-weight:850;letter-spacing:.5px}
+.ranking-record .w{color:#72d8a0}.ranking-record .l{color:#ff8796}
+.ranking-score{text-align:right;color:#6f86a2;font-size:8px;font-weight:900;letter-spacing:.6px}
+.ranking-score strong{display:block;color:#cbd7e6;font-size:14px;letter-spacing:0}
+.ranking-section-label{margin:22px 2px 9px;color:#607995;font-size:9px;font-weight:950;letter-spacing:1.4px}
 
 </style>
 </head>
@@ -2123,6 +2149,23 @@ button{
 
 
 
+<!-- RANKINGS -->
+<section id="rankings" class="screen rankings-screen">
+  <div class="screen-top">
+    <div class="brand">THE <span>SUMMIT</span></div>
+    <span class="count">POWER RANKINGS</span>
+  </div>
+  <div class="section-title">
+    <h2>RANKINGS</h2>
+    <span id="rankingCount" class="count">0</span>
+  </div>
+  <p class="ranking-intro">
+    The current order of the Summit. The Top 10 are the fighters featured in Ranking Videos.
+    Scroll further to see the rest of the division.
+  </p>
+  <div id="rankingList" class="ranking-list"></div>
+</section>
+
 <!-- FIGHT -->
 
 <section id="fight" class="screen">
@@ -2240,6 +2283,17 @@ button{
     </strong>
 
     FIGHTERS
+
+  </button>
+
+
+  <button
+    data-nav="rankings"
+    onclick="go('rankings')">
+
+    <strong>◈</strong>
+
+    RANKINGS
 
   </button>
 
@@ -2526,6 +2580,11 @@ function go(id){
 
   if(id === 'fighters'){
     renderFighters();
+  }
+
+
+  if(id === 'rankings'){
+    renderRankings();
   }
 
 
@@ -3585,6 +3644,50 @@ function renderFighters(){
 }
 
 
+
+
+/* RENDER RANKINGS */
+function rankingScore(f){
+  const wins=Number(f.wins)||0, losses=Number(f.losses)||0;
+  const totalStats=(Number(f.strength)||0)+(Number(f.intelligence)||0)+(Number(f.durability)||0)+(Number(f.speed)||0);
+  const fights=wins+losses, winRate=fights?wins/fights:0;
+  return wins*10000+winRate*1000+totalStats;
+}
+function getRankedFighters(){
+  return [...fighters].sort((a,b)=>{
+    if(a.champion&&!b.champion)return -1;
+    if(!a.champion&&b.champion)return 1;
+    const diff=rankingScore(b)-rankingScore(a);
+    return diff!==0?diff:String(a.name).localeCompare(String(b.name));
+  });
+}
+function rankingRow(f,index){
+  const rank=index+1;
+  const classes=['ranking-row',rank<=10?'top-ten':'',rank===1?'rank-one':'',f.champion?'champion':''].filter(Boolean).join(' ');
+  const portrait=f.portrait_path
+    ? '<img src="'+portraitUrl(f)+'" alt="'+esc(f.name)+' portrait" loading="lazy">'
+    : '<div class="ranking-portrait-empty">SUMMIT</div>';
+  const kicker=f.champion?'SUMMIT CHAMPION':rank<=10?'TOP 10 CONTENDER':'CONTENDER';
+  return '<article class="'+classes+'" onclick="openFighterDetails(\''+f.id+'\')">'+
+    '<div class="ranking-position">#'+String(rank).padStart(2,'0')+'</div>'+
+    '<div class="ranking-portrait">'+portrait+'</div>'+
+    '<div class="ranking-main"><div class="ranking-kicker">'+kicker+'</div><div class="ranking-name">'+esc(f.name)+'</div><div class="ranking-record"><span class="w">W '+String(f.wins).padStart(2,'0')+'</span><span> — </span><span class="l">L '+String(f.losses).padStart(2,'0')+'</span></div></div>'+
+    '<div class="ranking-score">POWER<strong>'+rankingScore(f).toFixed(0)+'</strong></div>'+
+    '</article>';
+}
+function renderRankings(){
+  const list=document.getElementById('rankingList'),count=document.getElementById('rankingCount');
+  if(!list)return;
+  const ranked=getRankedFighters();
+  if(count)count.textContent=ranked.length;
+  if(!ranked.length){
+    list.innerHTML='<div class="empty">No fighters yet.<br>Create the first contender.</div>';
+    return;
+  }
+  const topTen=ranked.slice(0,10),rest=ranked.slice(10);
+  list.innerHTML=topTen.map(rankingRow).join('')+
+    (rest.length?'<div class="ranking-section-label">THE REST OF THE SUMMIT</div>'+rest.map((f,i)=>rankingRow(f,i+10)).join(''):'');
+}
 
 /* DELETE MODE */
 
