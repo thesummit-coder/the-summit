@@ -3927,7 +3927,7 @@ async function renderRankingIntelligence(ranked){
   try{
     const {data:fights,error}=await supabase
       .from('fights')
-      .select('id,fighter_a,fighter_b,winner,created_at')
+      .select('fighter_a,fighter_b,winner,created_at')
       .order('created_at',{ascending:false})
       .limit(1000);
 
