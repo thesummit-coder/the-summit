@@ -3916,6 +3916,7 @@ let rankingIntelligenceRequest=0;
 async function renderRankingIntelligence(ranked){
   const root=document.getElementById('rankingIntelligence');
   if(!root)return;
+
   if(!ranked.length){
     root.innerHTML='<div class="intelligence-empty">Create contenders to unlock Ranking Intelligence.</div>';
     return;
@@ -3924,8 +3925,13 @@ async function renderRankingIntelligence(ranked){
   const request=++rankingIntelligenceRequest;
   root.innerHTML='<div class="intelligence-empty">Analyzing the mountain...</div>';
 
+  const card=(kicker,item,value,cls='')=>item
+    ? '<article class="intelligence-card '+cls+'"><div class="intelligence-kicker">'+kicker+'</div><div class="intelligence-name">'+esc(item.fighter.name)+'</div><div class="intelligence-value">'+esc(value)+'</div></article>'
+    : '<article class="intelligence-card muted"><div class="intelligence-kicker">'+kicker+'</div><div class="intelligence-name">NO DATA YET</div><div class="intelligence-value">'+esc(value||'BUILD THE STORY')+'</div></article>';
+
   try{
-    const {data:fights,error}=await supabase
+    let fights=[];
+    const result=await supabase
       .from('fights')
       .select('fighter_a,fighter_b,winner,created_at')
       .order('created_at',{ascending:false})
@@ -3933,131 +3939,158 @@ async function renderRankingIntelligence(ranked){
 
     if(request!==rankingIntelligenceRequest)return;
 
-    if(error){
-      console.error('Ranking Intelligence query failed:',error);
-      root.innerHTML='<div class="intelligence-empty">Ranking Intelligence could not be loaded.</div>';
-      return;
+    if(!result.error && Array.isArray(result.data)){
+      fights=result.data.filter(f =>
+        f &&
+        f.fighter_a &&
+        f.fighter_b &&
+        f.winner &&
+        f.created_at
+      );
+    }else{
+      console.warn('Ranking Intelligence fight data unavailable; using fighter records.',result.error);
     }
 
-    const fightRows=fights||[];
-  const byFighter=new Map(ranked.map(f=>[f.id,[]]));
+    const byId=new Map(ranked.map(f=>[String(f.id),f]));
+    const rowsFor=(fighterId)=>{
+      const id=String(fighterId);
+      return fights
+        .filter(x=>String(x.fighter_a)===id||String(x.fighter_b)===id)
+        .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+    };
 
-  fightRows.forEach(fight=>{
-    if(byFighter.has(fight.fighter_a))byFighter.get(fight.fighter_a).push(fight);
-    if(byFighter.has(fight.fighter_b))byFighter.get(fight.fighter_b).push(fight);
-  });
+    const currentStreak=(fighterId)=>{
+      const rows=rowsFor(fighterId).slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+      let wins=0;
+      for(const row of rows){
+        if(String(row.winner)===String(fighterId))wins++;
+        else break;
+      }
+      return wins;
+    };
 
-  const resultsFor=(fighterId,source=fightRows)=>{
-    return source
-      .filter(x=>x.fighter_a===fighterId||x.fighter_b===fighterId)
-      .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
-  };
+    const longestWinStreak=(fighterId)=>{
+      let best=0,run=0;
+      for(const row of rowsFor(fighterId)){
+        if(String(row.winner)===String(fighterId)){
+          run++;
+          if(run>best)best=run;
+        }else{
+          run=0;
+        }
+      }
+      return best;
+    };
 
-  const currentStreak=(fighterId)=>{
-    const rows=resultsFor(fighterId).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
-    let wins=0;
-    for(const row of rows){
-      if(row.winner===fighterId)wins++;
-      else break;
-    }
-    return wins;
-  };
+    const rankingPower=(fighter)=>{
+      const wins=Number(fighter.wins)||0;
+      const losses=Number(fighter.losses)||0;
+      const totalStats=(Number(fighter.strength)||0)+(Number(fighter.intelligence)||0)+(Number(fighter.durability)||0)+(Number(fighter.speed)||0);
+      const total=wins+losses;
+      const rate=total?wins/total:0;
+      return wins*10000+rate*1000+totalStats;
+    };
 
-  const longestWinStreak=(fighterId)=>{
-    let best=0,run=0;
-    for(const row of resultsFor(fighterId)){
-      if(row.winner===fighterId){run++;best=Math.max(best,run);}
-      else run=0;
-    }
-    return best;
-  };
+    const streakLeaders=ranked
+      .map(f=>({fighter:f,streak:currentStreak(f.id)}))
+      .filter(x=>x.streak>0)
+      .sort((a,b)=>b.streak-a.streak||rankingPower(b.fighter)-rankingPower(a.fighter));
 
-  const undefeated=ranked.filter(f=>Number(f.losses)===0&&Number(f.wins)>0)
-    .sort((a,b)=>Number(b.wins)-Number(a.wins))[0];
+    const longestLeaders=ranked
+      .map(f=>({fighter:f,streak:longestWinStreak(f.id)}))
+      .filter(x=>x.streak>0)
+      .sort((a,b)=>b.streak-a.streak||rankingPower(b.fighter)-rankingPower(a.fighter));
 
-  const streakLeader=ranked
-    .map(f=>({fighter:f,streak:currentStreak(f.id)}))
-    .sort((a,b)=>b.streak-a.streak||rankingScore(b.fighter)-rankingScore(a.fighter))[0];
+    const undefeated=ranked
+      .filter(f=>(Number(f.losses)||0)===0&&(Number(f.wins)||0)>0)
+      .sort((a,b)=>(Number(b.wins)||0)-(Number(a.wins)||0)||rankingPower(b)-rankingPower(a))[0];
 
-  const longestLeader=ranked
-    .map(f=>({fighter:f,streak:longestWinStreak(f.id)}))
-    .sort((a,b)=>b.streak-a.streak||rankingScore(b.fighter)-rankingScore(a.fighter))[0];
+    const cutoff=Date.now()-7*24*60*60*1000;
+    const weekFights=fights.filter(f=>new Date(f.created_at).getTime()>=cutoff);
+    const weeklyWins=new Map();
 
-  const weekCutoff=Date.now()-7*24*60*60*1000;
-  const weekFights=fightRows.filter(f=>new Date(f.created_at).getTime()>=weekCutoff);
-
-  const weeklyWins=new Map(),weeklyLosses=new Map();
-  weekFights.forEach(f=>{
-    const win=String(f.winner);
-    weeklyWins.set(win,(weeklyWins.get(win)||0)+1);
-    const lose=f.fighter_a===f.winner?f.fighter_b:f.fighter_a;
-    weeklyLosses.set(lose,(weeklyLosses.get(lose)||0)+1);
-  });
-
-  const fighterOfWeek=ranked
-    .map(f=>({fighter:f,wins:weeklyWins.get(f.id)||0}))
-    .filter(x=>x.wins>0)
-    .sort((a,b)=>b.wins-a.wins||rankingScore(b.fighter)-rankingScore(a.fighter))[0];
-
-  const loserOfWeek=ranked
-    .map(f=>{
-      const rows=resultsFor(f.id).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
-      const lastThree=rows.slice(0,3);
-      return {fighter:f,losses:lastThree.filter(x=>x.winner!==f.id).length,qualifies:lastThree.length>=3&&lastThree.every(x=>x.winner!==f.id)};
-    })
-    .filter(x=>x.qualifies)
-    .sort((a,b)=>b.losses-a.losses||new Date(b.fighter.created_at)-new Date(a.fighter.created_at))[0];
-
-  const scoreAt=(fighter,wins,losses)=>{
-    const totalStats=(Number(fighter.strength)||0)+(Number(fighter.intelligence)||0)+(Number(fighter.durability)||0)+(Number(fighter.speed)||0);
-    const total=wins+losses,rate=total?wins/total:0;
-    return wins*10000+rate*1000+totalStats;
-  };
-
-  const cutoff=new Date(Date.now()-7*24*60*60*1000);
-  const historicalRanks=ranked
-    .filter(f=>new Date(f.created_at)<=cutoff)
-    .map(f=>{
-      let wins=0,losses=0;
-      fightRows.forEach(fight=>{
-        if(new Date(fight.created_at)>cutoff)return;
-        if(fight.fighter_a!==f.id&&fight.fighter_b!==f.id)return;
-        if(fight.winner===f.id)wins++; else losses++;
-      });
-      return {fighter:f,wins,losses};
+    weekFights.forEach(f=>{
+      const winner=String(f.winner);
+      weeklyWins.set(winner,(weeklyWins.get(winner)||0)+1);
     });
 
-  const historicalOrder=historicalRanks
-    .sort((a,b)=>scoreAt(b.fighter,b.wins,b.losses)-scoreAt(a.fighter,a.wins,a.losses)||String(a.fighter.name).localeCompare(String(b.fighter.name)));
+    const fighterOfWeek=ranked
+      .map(f=>({fighter:f,wins:weeklyWins.get(String(f.id))||0}))
+      .filter(x=>x.wins>0)
+      .sort((a,b)=>b.wins-a.wins||rankingPower(b.fighter)-rankingPower(a.fighter))[0];
 
-  const historicalPos=new Map(historicalOrder.map((x,i)=>[x.fighter.id,i+1]));
-  const currentPos=new Map(ranked.filter(f=>!f.champion).map((f,i)=>[f.id,i+1]));
+    const loserCandidates=ranked.map(f=>{
+      const lastThree=rowsFor(f.id).slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,3);
+      const qualifies=lastThree.length===3&&lastThree.every(x=>String(x.winner)!==String(f.id));
+      return {fighter:f,qualifies};
+    }).filter(x=>x.qualifies);
 
-  const movement=ranked.filter(f=>!f.champion&&historicalPos.has(f.id)&&currentPos.has(f.id))
-    .map(f=>({fighter:f,move:historicalPos.get(f.id)-currentPos.get(f.id)}))
-    .sort((a,b)=>b.move-a.move);
+    const loserOfWeek=loserCandidates
+      .sort((a,b)=>rankingPower(a.fighter)-rankingPower(b.fighter))[0];
 
-  const climber=movement.find(x=>x.move>0);
-  const faller=[...movement].sort((a,b)=>a.move-b.move).find(x=>x.move<0);
+    let climber=null;
+    let faller=null;
 
-  const card=(kicker,item,value,cls='')=>item
-    ? '<article class="intelligence-card '+cls+'"><div class="intelligence-kicker">'+kicker+'</div><div class="intelligence-name">'+esc(item.fighter.name)+'</div><div class="intelligence-value">'+esc(value)+'</div></article>'
-    : '<article class="intelligence-card muted"><div class="intelligence-kicker">'+kicker+'</div><div class="intelligence-name">NO DATA YET</div><div class="intelligence-value">BUILD THE STORY</div></article>';
+    if(fights.length){
+      const historical=ranked
+        .filter(f=>f.created_at&&new Date(f.created_at)<=new Date(cutoff))
+        .map(f=>{
+          let wins=0,losses=0;
+          fights.forEach(fight=>{
+            if(new Date(fight.created_at)>new Date(cutoff))return;
+            if(String(fight.fighter_a)!==String(f.id)&&String(fight.fighter_b)!==String(f.id))return;
+            if(String(fight.winner)===String(f.id))wins++;
+            else losses++;
+          });
+          return {fighter:f,wins,losses};
+        })
+        .sort((a,b)=>{
+          const score=(x)=>rankingPower({...x.fighter,wins:x.wins,losses:x.losses});
+          return score(b)-score(a)||String(a.fighter.name).localeCompare(String(b.fighter.name));
+        });
 
-  root.innerHTML=
-    card('BIGGEST CLIMBER',climber,climber?(climber.move===1?'+1 rank':'+'+climber.move+' ranks')+' // 7 DAYS':'NO MOVEMENT YET','success')+
-    card('BIGGEST FALLER',faller,faller?(faller.move===-1?'-1 rank':faller.move+' ranks')+' // 7 DAYS':'NO MOVEMENT YET','danger')+
-    card('WIN STREAK',streakLeader&&streakLeader.streak>0?streakLeader:null,(streakLeader?.streak||0)+' STRAIGHT WINS','success')+
-    card('LONGEST WIN STREAK',longestLeader&&longestLeader.streak>0?longestLeader:null,(longestLeader?.streak||0)+' TOTAL','gold')+
-    card('MOST KOs',null,'FIGHT METHOD NOT TRACKED YET','muted')+
-    card('UNDEFEATED',undefeated,undefeated?(undefeated.wins+' — 0 // UNDEFEATED'):'NO UNDEFEATED FIGHTER','gold')+
-    card('FIGHTER OF THE WEEK',fighterOfWeek,fighterOfWeek?(fighterOfWeek.wins+' WIN'+(fighterOfWeek.wins===1?'':'S')+' // LAST 7 DAYS'):'NO WINS THIS WEEK','success')+
-    card('LOSER OF THE WEEK',loserOfWeek,loserOfWeek?'LAST 3 FIGHTS: 3 LOSSES':'NO VICTIM FOUND','danger');
-  }catch(_error){
+      const oldPos=new Map(historical.map((x,i)=>[String(x.fighter.id),i+1]));
+      const currentPos=new Map(ranked.map((f,i)=>[String(f.id),i+1]));
+      const moves=ranked
+        .filter(f=>oldPos.has(String(f.id))&&currentPos.has(String(f.id)))
+        .map(f=>({fighter:f,move:oldPos.get(String(f.id))-currentPos.get(String(f.id))}));
+
+      climber=moves.filter(x=>x.move>0).sort((a,b)=>b.move-a.move)[0]||null;
+      faller=moves.filter(x=>x.move<0).sort((a,b)=>a.move-b.move)[0]||null;
+    }
+
     if(request!==rankingIntelligenceRequest)return;
-    root.innerHTML='<div class="intelligence-empty">Ranking Intelligence could not be loaded.</div>';
+
+    root.innerHTML=
+      card('BIGGEST CLIMBER',climber,climber?(climber.move===1?'+1 RANK':'+'+climber.move+' RANKS')+' // 7 DAYS':'NO MOVEMENT YET','success')+
+      card('BIGGEST FALLER',faller,faller?(faller.move===-1?'-1 RANK':faller.move+' RANKS')+' // 7 DAYS':'NO MOVEMENT YET','danger')+
+      card('WIN STREAK',streakLeaders[0],streakLeaders[0].streak+' STRAIGHT WINS','success')+
+      card('LONGEST WIN STREAK',longestLeaders[0],longestLeaders[0].streak+' TOTAL','gold')+
+      card('MOST KOs',null,'FIGHT METHOD NOT TRACKED YET','muted')+
+      card('UNDEFEATED',undefeated,undefeated?(Number(undefeated.wins)||0)+' — 0 // UNDEFEATED':'NO UNDEFEATED FIGHTER','gold')+
+      card('FIGHTER OF THE WEEK',fighterOfWeek,fighterOfWeek?(fighterOfWeek.wins+' WIN'+(fighterOfWeek.wins===1?'':'S')+' // LAST 7 DAYS'):'NO WINS THIS WEEK','success')+
+      card('LOSER OF THE WEEK',loserOfWeek,loserOfWeek?'LAST 3 FIGHTS: 3 LOSSES':'NO VICTIM FOUND','danger');
+
+  }catch(error){
+    console.error('Ranking Intelligence calculation failed:',error);
+    if(request!==rankingIntelligenceRequest)return;
+
+    const safeLeader=ranked
+      .filter(f=>(Number(f.wins)||0)>0)
+      .sort((a,b)=>(Number(b.wins)||0)-(Number(a.wins)||0))[0];
+
+    root.innerHTML=
+      card('BIGGEST CLIMBER',null,'FIGHT HISTORY NEEDED','success')+
+      card('BIGGEST FALLER',null,'FIGHT HISTORY NEEDED','danger')+
+      card('WIN STREAK',null,'FIGHT HISTORY NEEDED','success')+
+      card('LONGEST WIN STREAK',null,'FIGHT HISTORY NEEDED','gold')+
+      card('MOST KOs',null,'FIGHT METHOD NOT TRACKED YET','muted')+
+      card('UNDEFEATED',ranked.find(f=>(Number(f.losses)||0)===0&&(Number(f.wins)||0)>0),safeLeader?'UNDEFEATED':'NO UNDEFEATED FIGHTER','gold')+
+      card('FIGHTER OF THE WEEK',null,'FIGHT HISTORY NEEDED','success')+
+      card('LOSER OF THE WEEK',null,'FIGHT HISTORY NEEDED','danger');
   }
 }
+
 function rankingVideoFighter(fighter,rank,total){
   const isOne=rank===1;
   const champion=!!fighter.champion;
