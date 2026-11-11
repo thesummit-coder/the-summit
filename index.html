@@ -4158,7 +4158,7 @@ async function renderFighterHistory(fighterId){
 
   const {data, error} = await supabase
     .from('fights')
-    .select('id,fighter_a,fighter_b,winner,method,fight_night,created_at')
+    .select('id,fighter_a,fighter_b,winner,method,fight_night,title_fight,created_at')
     .or('fighter_a.eq.' + fighterId + ',fighter_b.eq.' + fighterId)
     .order('created_at',{ascending:false});
 
@@ -4191,7 +4191,7 @@ async function renderFighterHistory(fighterId){
     return '<div class="fight-history-row">' +
       '<div class="fight-history-portrait">' + portrait + '</div>' +
       '<div class="fight-history-main">' +
-        '<div class="fight-history-label">FIGHT NIGHT #' + String(fight.fight_night || 1).padStart(3,'0') + ' · ' + esc(fight.method || 'RESULT') + '</div>' +
+        '<div class="fight-history-label">FIGHT NIGHT #' + String(fight.fight_night || 1).padStart(3,'0') + ' · ' + esc(fight.method || 'RESULT') + (fight.title_fight ? ' · TITLE FIGHT' : '') + '</div>' +
         '<div class="fight-history-opponent">' + esc(opponentName) + '</div>' +
         '<div class="fight-history-date">' + esc(date) + ' · ' + (fight.fight_night ? 'FIGHT NIGHT #' + String(fight.fight_night).padStart(3,'0') : 'FIGHT') + '</div>' +
       '</div>' +
