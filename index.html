@@ -1646,19 +1646,27 @@ button{
   grid-template-columns:31px minmax(0,1fr) 28px minmax(0,1fr);
   align-items:center;
   gap:7px;
+  width:100%;
   min-height:70px;
   padding:10px 11px;
+  margin:0;
+  border:0;
   border-bottom:1px solid rgba(35,70,110,.55);
+  border-radius:0;
+  appearance:none;
+  -webkit-appearance:none;
+  font:inherit;
+  color:inherit;
+  text-align:left;
+  background:transparent;
+  cursor:pointer;
+  transition:background .18s ease,transform .18s ease;
 }
 
 .fight-night-bout:last-child{
   border-bottom:0;
 }
 
-.fight-night-bout{
-  cursor:pointer;
-  transition:background .18s ease,transform .18s ease;
-}
 .fight-night-bout:active{
   transform:scale(.992);
   background:rgba(63,145,255,.06);
