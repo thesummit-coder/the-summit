@@ -4832,6 +4832,10 @@ function renderFightNightMethodStage(){
       ` : ''}
     </div>
 
+    <button class="btn primary" onclick="completeFightNightBout()" style="margin-top:8px">
+      CONFIRM RESULT
+    </button>
+
     <button class="btn danger" onclick="renderFightNightWinnerStage()">
       CHANGE WINNER
     </button>
@@ -4861,6 +4865,76 @@ function selectFightNightMethod(method){
 
   currentFight.method=method;
   renderFightNightMethodStage();
+}
+
+
+async function completeFightNightBout(){
+
+  if(!currentFight)return;
+
+  if(!currentFight.winner){
+    return toast('Choose a winner first.');
+  }
+
+  if(!currentFight.method){
+    return toast('Choose KO or DECISION first.');
+  }
+
+  if(currentFight.boutIndex===null || currentFight.boutIndex<0){
+    return toast('Fight Night bout could not be found.');
+  }
+
+  const token=(await supabase.auth.getSession()).data.session?.access_token;
+
+  if(!token){
+    return toast('Please sign in again.');
+  }
+
+  const res=await fetch(RECORD_FIGHT_URL,{
+    method:'POST',
+    headers:{
+      'Authorization':'Bearer '+token,
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify({
+      fighter_a:currentFight.a,
+      fighter_b:currentFight.b,
+      winner:currentFight.winner,
+      method:currentFight.method,
+      fight_night:currentFight.night
+    })
+  });
+
+  const payload=await res.json().catch(()=>({}));
+
+  if(!res.ok){
+    return toast(payload.error||'Fight could not be recorded.');
+  }
+
+  const bout=fightNightDraft?.bouts?.[currentFight.boutIndex];
+
+  if(bout){
+    bout.completed=true;
+    bout.winner=currentFight.winner;
+    bout.method=currentFight.method;
+  }
+
+  const winnerName=fighters.find(f=>f.id===currentFight.winner)?.name||'Winner';
+
+  currentFight=null;
+
+  await loadFighters();
+
+  if(fightNightDraft?.bouts){
+    fightNightDraft.bouts.forEach(bout=>{
+      bout.a=fighters.find(f=>f.id===bout.a.id)||bout.a;
+      bout.b=fighters.find(f=>f.id===bout.b.id)||bout.b;
+    });
+  }
+
+  renderFightHome();
+
+  toast(winnerName+' wins by '+(bout?.method||'')+'.');
 }
 
 function choiceInner(f){
