@@ -4757,11 +4757,11 @@ function renderFightNightWinnerStage(){
     return renderFightNightMethodStage();
   }
 
-  document.getElementById('fightArea').innerHTML=\`
+  document.getElementById('fightArea').innerHTML=`
     <div class="versus">
-      \${esc(a.name)}
+      ${esc(a.name)}
       VS
-      \${esc(b.name)}
+      ${esc(b.name)}
     </div>
 
     <div class="fight-winner-stage">
@@ -4769,12 +4769,12 @@ function renderFightNightWinnerStage(){
       <p class="fight-winner-subtitle">Choose the winner of this fight</p>
 
       <div class="fight-grid">
-        <button class="fighter-choice" onclick="selectFightNightWinner('\${a.id}')">
-          \${choiceInner(a)}
+        <button class="fighter-choice" onclick="selectFightNightWinner('${a.id}')">
+          ${choiceInner(a)}
         </button>
 
-        <button class="fighter-choice" onclick="selectFightNightWinner('\${b.id}')">
-          \${choiceInner(b)}
+        <button class="fighter-choice" onclick="selectFightNightWinner('${b.id}')">
+          ${choiceInner(b)}
         </button>
       </div>
     </div>
@@ -4782,7 +4782,7 @@ function renderFightNightWinnerStage(){
     <button class="btn danger" onclick="renderFightHome()">
       BACK TO FIGHT NIGHT
     </button>
-  \`;
+  `;
 }
 
 function renderFightNightMethodStage(){
@@ -4798,11 +4798,11 @@ function renderFightNightMethodStage(){
     return renderFightHome();
   }
 
-  document.getElementById('fightArea').innerHTML=\`
+  document.getElementById('fightArea').innerHTML=`
     <div class="versus">
-      \${esc(a.name)}
+      ${esc(a.name)}
       VS
-      \${esc(b.name)}
+      ${esc(b.name)}
     </div>
 
     <div class="fight-method-stage">
@@ -4810,7 +4810,7 @@ function renderFightNightMethodStage(){
       <p class="fight-winner-subtitle">Choose the fight result</p>
 
       <div class="fight-method-winner">
-        WINNER · \${esc(winner.name)}
+        WINNER · ${esc(winner.name)}
       </div>
 
       <div class="fight-method-grid">
@@ -4825,11 +4825,11 @@ function renderFightNightMethodStage(){
         </button>
       </div>
 
-      \${currentFight.method ? \`
+      ${currentFight.method ? `
         <div class="fight-method-selected">
-          RESULT SELECTED · \${esc(currentFight.method)}
+          RESULT SELECTED · ${esc(currentFight.method)}
         </div>
-      \` : ''}
+      ` : ''}
     </div>
 
     <button class="btn danger" onclick="renderFightNightWinnerStage()">
@@ -4839,7 +4839,7 @@ function renderFightNightMethodStage(){
     <button class="btn danger" style="margin-top:8px" onclick="renderFightHome()">
       BACK TO FIGHT NIGHT
     </button>
-  \`;
+  `;
 }
 
 function selectFightNightWinner(winId){
