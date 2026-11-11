@@ -1655,6 +1655,14 @@ button{
   border-bottom:0;
 }
 
+.fight-night-bout{
+  cursor:pointer;
+  transition:background .18s ease,transform .18s ease;
+}
+.fight-night-bout:active{
+  transform:scale(.992);
+  background:rgba(63,145,255,.06);
+}
 .fight-night-bout.main-event{
   background:radial-gradient(circle at 50% 50%,rgba(63,145,255,.10),transparent 62%);
   min-height:82px;
@@ -4424,10 +4432,6 @@ function renderFightNightCard(night){
 
   const rows=night.bouts.map((bout,index)=>{
     const main=bout.mainEvent;
-    const label=main
-      ? '<div class="fight-night-main-event">MAIN EVENT</div>'
-      : '';
-
     const portrait=(f)=>{
       if(f.portrait_path){
         return '<img src="'+portraitUrl(f)+'" alt="'+esc(f.name)+' portrait" loading="lazy">';
@@ -4435,7 +4439,7 @@ function renderFightNightCard(night){
       return '<div class="fight-night-portrait empty">SUMMIT</div>';
     };
 
-    return '<div class="fight-night-bout'+(main?' main-event':'')+'">'+
+    return '<button type="button" class="fight-night-bout'+(main?' main-event':'')+'" onclick="openFightNightBout('+index+')">'+
       '<div class="fight-night-number">#'+String(index+1).padStart(2,'0')+'</div>'+
       '<div class="fight-night-fighter">'+
         '<div class="fight-night-portrait">'+portrait(bout.a)+'</div>'+
@@ -4448,7 +4452,7 @@ function renderFightNightCard(night){
         '<div><div class="fight-night-name">'+esc(bout.b.name)+'</div>'+
         '<div class="fight-night-record">W '+String(bout.b.wins).padStart(2,'0')+' — L '+String(bout.b.losses).padStart(2,'0')+'</div></div>'+
       '</div>'+
-    '</div>';
+    '</button>';
   }).join('');
 
   return '<section class="fight-night-card">'+
@@ -4461,40 +4465,80 @@ function renderFightNightCard(night){
   '<button class="btn" onclick="generateFightNight()">REGENERATE RANDOM CARD</button>';
 }
 
-/* LEGACY SINGLE-FIGHT ENGINE — retained for the next Fight Night phase */
+function openFightNightBout(index){
 
-function randomFight(){
+  if(!fightNightDraft || !fightNightDraft.bouts[index])return;
 
-  if(fighters.length < 2){
-    return toast('Create at least two fighters.');
-  }
+  const bout=fightNightDraft.bouts[index];
+  const area=document.getElementById('fightArea');
+  if(!area)return;
 
-  let a=Math.floor(Math.random()*fighters.length);
-  let b;
-  do{
-    b=Math.floor(Math.random()*fighters.length);
-  }while(b===a);
+  const a=bout.a;
+  const b=bout.b;
+  const main=bout.mainEvent;
 
-  startFight(fighters[a],fighters[b]);
+  const portrait=(f)=>{
+    if(f.portrait_path){
+      return '<img src="'+portraitUrl(f)+'" alt="'+esc(f.name)+' portrait">';
+    }
+    return '<div class="fight-night-portrait empty">SUMMIT</div>';
+  };
+
+  area.innerHTML=
+    '<div class="fight-night-intro">'+
+      '<div class="eyebrow">THE SUMMIT // FIGHT '+String(index+1).padStart(2,'0')+'</div>'+
+      '<h3>'+ (main ? 'MAIN EVENT' : 'FIGHT #'+String(index+1).padStart(2,'0')) +'</h3>'+
+      '<p>'+ (main ? 'The final fight of the night.' : 'The night begins here.') +'</p>'+
+    '</div>'+
+    '<section class="fight-night-card">'+
+      '<div class="fight-night-card-head">'+
+        '<strong>THE MATCHUP</strong>'+
+        '<span>'+ (main ? 'MAIN EVENT' : 'FIGHT NIGHT #'+String(fightNightDraft.number).padStart(3,'0')) +'</span>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 34px 1fr;gap:10px;align-items:center;padding:18px 12px">'+
+        '<div style="text-align:center">'+
+          '<div class="fight-night-portrait" style="width:78px;height:92px;margin:0 auto 9px">'+portrait(a)+'</div>'+
+          '<div class="fight-night-name" style="font-size:15px">'+esc(a.name)+'</div>'+
+          '<div class="fight-night-record">W '+String(a.wins).padStart(2,'0')+' — L '+String(a.losses).padStart(2,'0')+'</div>'+
+        '</div>'+
+        '<div class="fight-night-vs" style="font-size:10px">VS</div>'+
+        '<div style="text-align:center">'+
+          '<div class="fight-night-portrait" style="width:78px;height:92px;margin:0 auto 9px">'+portrait(b)+'</div>'+
+          '<div class="fight-night-name" style="font-size:15px">'+esc(b.name)+'</div>'+
+          '<div class="fight-night-record">W '+String(b.wins).padStart(2,'0')+' — L '+String(b.losses).padStart(2,'0')+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="padding:0 12px 14px">'+
+        '<div class="fight-night-main-event" style="display:'+(main?'block':'none')+'">MAIN EVENT</div>'+
+      '</div>'+
+    '</section>'+
+    '<button class="btn primary" onclick="beginFightNightBout('+index+')">BEGIN FIGHT</button>'+
+    '<button class="btn ghost" onclick="renderFightHome()">BACK TO FIGHT NIGHT</button>';
 }
 
-function startAgainst(id){
+function beginFightNightBout(index){
 
-  if(fighters.length < 2){
-    return toast('Create another fighter first.');
-  }
+  if(!fightNightDraft || !fightNightDraft.bouts[index])return;
 
-  const a=fighters.find(f=>f.id===id);
-  const pool=fighters.filter(f=>f.id!==id);
-  const b=pool[Math.floor(Math.random()*pool.length)];
+  const bout=fightNightDraft.bouts[index];
+  currentFight={
+    a:bout.a.id,
+    b:bout.b.id,
+    night:fightNightDraft.number,
+    boutIndex:index
+  };
 
-  go('fight');
-  startFight(a,b);
+  startFight(bout.a,bout.b,true);
 }
 
-function startFight(a,b){
+function startFight(a,b,fromFightNight=false){
 
-  currentFight={a:a.id,b:b.id};
+  currentFight={
+    a:a.id,
+    b:b.id,
+    night:fromFightNight && fightNightDraft ? fightNightDraft.number : null,
+    boutIndex:fromFightNight && fightNightDraft ? fightNightDraft.bouts.findIndex(x=>x.a.id===a.id&&x.b.id===b.id) : null
+  };
 
   document.getElementById('fightArea').innerHTML=`
     <div class="versus">
@@ -4514,7 +4558,7 @@ function startFight(a,b){
     </div>
 
     <button class="btn danger" onclick="renderFightHome()">
-      CANCEL FIGHT
+      BACK TO FIGHT NIGHT
     </button>
   `;
 }
