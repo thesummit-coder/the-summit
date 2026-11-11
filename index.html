@@ -1927,6 +1927,37 @@ button{
   text-transform:uppercase;
 }
 
+.fight-night-result{
+  grid-column:1 / -1;
+  margin:4px 10px 2px;
+  padding:8px 10px;
+  border:1px solid rgba(63,145,255,.25);
+  border-radius:999px;
+  background:rgba(63,145,255,.07);
+  color:#8fc2ff;
+  font-size:8px;
+  font-weight:950;
+  letter-spacing:1.25px;
+  text-align:center;
+  text-transform:uppercase;
+}
+
+.fight-night-winner .fight-night-name{
+  color:#fff;
+}
+
+.fight-night-winner .fight-night-record{
+  color:#8fc2ff;
+}
+
+.fight-night-winner-mark{
+  display:inline-block;
+  margin-left:5px;
+  color:#8fc2ff;
+  font-size:7px;
+  letter-spacing:1px;
+}
+
 
 .versus{
   display:flex;
@@ -4599,6 +4630,11 @@ function renderFightNightCard(night){
 
   const rows=night.bouts.map((bout,index)=>{
     const main=bout.mainEvent;
+    const completed=!!bout.completed;
+    const winnerId=bout.winner||null;
+    const winnerName=winnerId
+      ? (bout.a.id===winnerId ? bout.a.name : bout.b.id===winnerId ? bout.b.name : '')
+      : '';
     const portrait=(f)=>{
       if(f.portrait_path){
         return '<img src="'+portraitUrl(f)+'" alt="'+esc(f.name)+' portrait" loading="lazy">';
@@ -4606,19 +4642,23 @@ function renderFightNightCard(night){
       return '<div class="fight-night-portrait empty">SUMMIT</div>';
     };
 
+    const aWinner=completed && winnerId===bout.a.id;
+    const bWinner=completed && winnerId===bout.b.id;
+
     return '<button type="button" class="fight-night-bout'+(main?' main-event':'')+'" onclick="openFightNightBout('+index+')">'+
       '<div class="fight-night-number">#'+String(index+1).padStart(2,'0')+'</div>'+
-      '<div class="fight-night-fighter">'+
+      '<div class="fight-night-fighter'+(aWinner?' fight-night-winner':'')+'">'+
         '<div class="fight-night-portrait">'+portrait(bout.a)+'</div>'+
-        '<div><div class="fight-night-name">'+esc(bout.a.name)+'</div>'+
+        '<div><div class="fight-night-name">'+esc(bout.a.name)+(aWinner?'<span class="fight-night-winner-mark">WIN</span>':'')+'</div>'+
         '<div class="fight-night-record">W '+String(bout.a.wins).padStart(2,'0')+' — L '+String(bout.a.losses).padStart(2,'0')+'</div></div>'+
       '</div>'+
       '<div class="fight-night-vs">VS</div>'+
-      '<div class="fight-night-fighter right">'+
+      '<div class="fight-night-fighter right'+(bWinner?' fight-night-winner':'')+'">'+
         '<div class="fight-night-portrait">'+portrait(bout.b)+'</div>'+
-        '<div><div class="fight-night-name">'+esc(bout.b.name)+'</div>'+
+        '<div><div class="fight-night-name">'+esc(bout.b.name)+(bWinner?'<span class="fight-night-winner-mark">WIN</span>':'')+'</div>'+
         '<div class="fight-night-record">W '+String(bout.b.wins).padStart(2,'0')+' — L '+String(bout.b.losses).padStart(2,'0')+'</div></div>'+
       '</div>'+
+      (completed ? '<div class="fight-night-result">'+esc(winnerName)+' · '+esc(bout.method||'RESULT')+'</div>' : '')+
     '</button>';
   }).join('');
 
