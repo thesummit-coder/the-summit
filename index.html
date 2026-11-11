@@ -1768,6 +1768,75 @@ button{
   gap:9px
 }
 
+.fight-winner-stage{
+  margin:14px 0 12px;
+}
+
+.fight-winner-title{
+  margin:0 0 5px;
+  text-align:center;
+  color:#f4f7fb;
+  font-size:24px;
+  line-height:1;
+  font-weight:950;
+  letter-spacing:-.8px;
+}
+
+.fight-winner-subtitle{
+  margin:0 0 14px;
+  text-align:center;
+  color:#7188a5;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:1.4px;
+  text-transform:uppercase;
+}
+
+.fighter-choice.winner-selected{
+  border-color:#3f91ff;
+  background:
+    radial-gradient(circle at 50% 0,rgba(63,145,255,.18),transparent 48%),
+    linear-gradient(145deg,#12365d,#0a1b30);
+  box-shadow:
+    0 18px 38px rgba(0,0,0,.28),
+    0 0 0 1px rgba(63,145,255,.14),
+    0 0 28px rgba(63,145,255,.10);
+  transform:translateY(-2px);
+}
+
+.fighter-choice.winner-selected .mini{
+  color:#fff;
+}
+
+.fighter-choice.winner-selected:after{
+  content:"WINNER";
+  position:absolute;
+  top:10px;
+  right:10px;
+  padding:4px 6px;
+  border:1px solid rgba(143,194,255,.35);
+  border-radius:999px;
+  background:rgba(63,145,255,.14);
+  color:#8fc2ff;
+  font-size:7px;
+  font-weight:950;
+  letter-spacing:1.2px;
+}
+
+.fight-winner-status{
+  margin:12px 0 14px;
+  padding:10px 12px;
+  border:1px solid #21466d;
+  border-radius:12px;
+  background:rgba(13,32,54,.72);
+  color:#8fc2ff;
+  text-align:center;
+  font-size:9px;
+  font-weight:950;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+}
+
 
 .versus{
   display:flex;
@@ -4545,8 +4614,14 @@ function startFight(a,b,fromFightNight=false){
     a:a.id,
     b:b.id,
     night:fromFightNight && fightNightDraft ? fightNightDraft.number : null,
-    boutIndex:fromFightNight && fightNightDraft ? fightNightDraft.bouts.findIndex(x=>x.a.id===a.id&&x.b.id===b.id) : null
+    boutIndex:fromFightNight && fightNightDraft ? fightNightDraft.bouts.findIndex(x=>x.a.id===a.id&&x.b.id===b.id) : null,
+    winner:null
   };
+
+  if(fromFightNight){
+    renderFightNightWinnerStage();
+    return;
+  }
 
   document.getElementById('fightArea').innerHTML=`
     <div class="versus">
@@ -4569,6 +4644,63 @@ function startFight(a,b,fromFightNight=false){
       BACK TO FIGHT NIGHT
     </button>
   `;
+}
+
+
+function renderFightNightWinnerStage(){
+
+  if(!currentFight)return;
+
+  const a=fighters.find(f=>f.id===currentFight.a);
+  const b=fighters.find(f=>f.id===currentFight.b);
+
+  if(!a||!b){
+    currentFight=null;
+    return renderFightHome();
+  }
+
+  document.getElementById('fightArea').innerHTML=\`
+    <div class="versus">
+      \${esc(a.name)}
+      VS
+      \${esc(b.name)}
+    </div>
+
+    <div class="fight-winner-stage">
+      <h2 class="fight-winner-title">WHO WON?</h2>
+      <p class="fight-winner-subtitle">Choose the winner of this fight</p>
+
+      <div class="fight-grid">
+        <button class="fighter-choice \${currentFight.winner===a.id?'winner-selected':''}" onclick="selectFightNightWinner('\${a.id}')">
+          \${choiceInner(a)}
+        </button>
+
+        <button class="fighter-choice \${currentFight.winner===b.id?'winner-selected':''}" onclick="selectFightNightWinner('\${b.id}')">
+          \${choiceInner(b)}
+        </button>
+      </div>
+
+      \${currentFight.winner ? \`
+        <div class="fight-winner-status">
+          WINNER SELECTED · \${esc(fighters.find(f=>f.id===currentFight.winner)?.name||'')}
+        </div>
+      \` : ''}
+    </div>
+
+    <button class="btn danger" onclick="renderFightHome()">
+      BACK TO FIGHT NIGHT
+    </button>
+  \`;
+}
+
+function selectFightNightWinner(winId){
+
+  if(!currentFight)return;
+
+  if(winId!==currentFight.a && winId!==currentFight.b)return;
+
+  currentFight.winner=winId;
+  renderFightNightWinnerStage();
 }
 
 function choiceInner(f){
