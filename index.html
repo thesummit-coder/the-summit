@@ -4683,7 +4683,7 @@ function renderFightNightCard(night){
   return '<section class="fight-night-card">'+
     '<div class="fight-night-card-head">'+
       '<strong>FIGHT NIGHT #'+String(night.number).padStart(3,'0')+'</strong>'+
-      '<span>'+night.bouts.length+' FIGHTS // RANDOM CARD</span>'+
+      '<span>'+night.bouts.filter(b=>b.completed).length+'/'+night.bouts.length+' COMPLETED // RANDOM CARD</span>'+
     '</div>'+
     rows+
   '</section>'+
