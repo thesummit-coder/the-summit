@@ -2505,6 +2505,21 @@ button{
 .fight-video-record{margin-top:5px;color:#7188a5;font-size:8px;font-weight:850;letter-spacing:.5px}
 .fight-video-vs{color:#8fc2ff;font-size:10px;font-weight:950;letter-spacing:2px}
 .fight-video-result{margin-top:16px;padding:14px;border:1px solid rgba(63,145,255,.28);border-radius:15px;background:rgba(13,32,54,.78);box-shadow:0 14px 32px rgba(0,0,0,.20)}
+.fight-video-stat-stage{width:100%;text-align:center;animation:summitRevealIn .5s cubic-bezier(.16,1,.3,1)}
+.fight-video-stat-label{color:#8fc2ff;font-size:10px;font-weight:950;letter-spacing:2.4px;text-transform:uppercase;margin-bottom:18px}
+.fight-video-stat-matchup{display:grid;grid-template-columns:1fr 42px 1fr;gap:10px;align-items:center}
+.fight-video-stat-side{padding:14px 8px;border:1px solid rgba(63,145,255,.20);border-radius:15px;background:rgba(9,24,43,.72)}
+.fight-video-stat-side.leading{border-color:rgba(121,255,190,.48);box-shadow:0 0 28px rgba(121,255,190,.08)}
+.fight-video-stat-name{color:#7188a5;font-size:8px;font-weight:950;letter-spacing:1.2px;text-transform:uppercase;overflow-wrap:anywhere}
+.fight-video-stat-number{margin-top:5px;font-size:42px;line-height:1;font-weight:950;color:#f4f7fb}
+.fight-video-stat-side.leading .fight-video-stat-number{color:#dfffee}
+.fight-video-stat-vs{color:#607895;font-size:9px;font-weight:950;letter-spacing:1.5px}
+.fight-video-score{margin-top:18px;color:#8fa4bf;font-size:11px;font-weight:950;letter-spacing:2px;text-transform:uppercase}
+.fight-video-score strong{color:#f4f7fb;font-size:18px;letter-spacing:1px}
+.fight-video-stat-result{margin-top:10px;color:#7188a5;font-size:9px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase}
+.fight-video-stat-result.win{color:#bfffdc}
+.fight-video-stat-result.tie{color:#ffe477}
+
 .fight-video-result-label{color:#607895;font-size:8px;font-weight:950;letter-spacing:1.5px;text-transform:uppercase}
 .fight-video-winner{margin-top:6px;color:#eafff6;font-size:22px;font-weight:950}
 .fight-video-method{margin-top:5px;color:#8fc2ff;font-size:10px;font-weight:950;letter-spacing:1.8px;text-transform:uppercase}
@@ -4511,19 +4526,63 @@ function fightVideoFighter(f){
 
 function fightVideoScene(bout,index,total){
   const main=!!bout.mainEvent;
-  const winnerId=bout.winner;
-  const winner=bout.a.id===winnerId?bout.a:bout.b.id===winnerId?bout.b:null;
   return '<div class="fight-video-fight '+(main?'fight-video-main-event':'')+'">'+
     '<div class="fight-video-kicker">'+(main?'MAIN EVENT':'FIGHT #'+String(index+1).padStart(2,'0'))+'</div>'+ 
     '<h1 class="fight-video-title">'+(main?'THE MAIN EVENT':'THE MATCHUP')+'</h1>'+ 
     '<div class="fight-video-matchup">'+fightVideoFighter(bout.a)+'<div class="fight-video-vs">VS</div>'+fightVideoFighter(bout.b)+'</div>'+ 
-    '<div class="fight-video-result">'+
-      '<div class="fight-video-result-label">WHO WON?</div>'+ 
-      '<div class="fight-video-winner">'+esc(winner?.name||'WINNER')+'</div>'+ 
-      '<div class="fight-video-method">'+esc(bout.method||'RESULT')+(bout.titleFight?' · TITLE FIGHT':'')+'</div>'+ 
-    '</div>'+ 
+    '<div class="fight-video-subtitle">FOUR STATS. ONE BATTLE.</div>'+ 
     '<div class="fight-video-progress">THE SUMMIT // '+(index+1)+' OF '+total+'</div>'+ 
     '</div>';
+}
+
+function fightVideoStatScene(bout,statIndex,total,scoreA,scoreB){
+  const keys=['strength','intelligence','durability','speed'];
+  const labels=['STRENGTH','INTELLIGENCE','DURABILITY','SPEED'];
+  const key=keys[statIndex];
+  const label=labels[statIndex];
+  const aValue=Number(bout.a[key])||0;
+  const bValue=Number(bout.b[key])||0;
+  const aLead=aValue>bValue;
+  const bLead=bValue>aValue;
+  const tie=!aLead&&!bLead;
+  const result=tie
+    ? 'STAT TIED'
+    : aLead
+      ? esc(bout.a.name)+' WINS'
+      : esc(bout.b.name)+' WINS';
+  return '<div class="fight-video-stat-stage">'+
+    '<div class="fight-video-stat-label">'+label+'</div>'+
+    '<div class="fight-video-stat-matchup">'+
+      '<div class="fight-video-stat-side '+(aLead?'leading':'')+'">'+
+        '<div class="fight-video-stat-name">'+esc(bout.a.name)+'</div>'+
+        '<div class="fight-video-stat-number">'+aValue+'</div>'+
+      '</div>'+
+      '<div class="fight-video-stat-vs">VS</div>'+
+      '<div class="fight-video-stat-side '+(bLead?'leading':'')+'">'+
+        '<div class="fight-video-stat-name">'+esc(bout.b.name)+'</div>'+
+        '<div class="fight-video-stat-number">'+bValue+'</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="fight-video-stat-result '+(tie?'tie':'win')+'">'+result+'</div>'+
+    '<div class="fight-video-score">STAT SCORE <strong>'+scoreA+' — '+scoreB+'</strong></div>'+
+    '<div class="fight-video-progress">THE SUMMIT // STAT '+(statIndex+1)+' OF 4</div>'+
+  '</div>';
+}
+
+function fightVideoResultScene(bout,index,total,scoreA,scoreB){
+  const winnerId=bout.winner;
+  const winner=bout.a.id===winnerId?bout.a:bout.b.id===winnerId?bout.b:null;
+  const main=!!bout.mainEvent;
+  return '<div class="fight-video-fight '+(main?'fight-video-main-event':'')+'">'+
+    '<div class="fight-video-kicker">'+(main?'MAIN EVENT':'FIGHT #'+String(index+1).padStart(2,'0'))+'</div>'+
+    '<h1 class="fight-video-title">WHO WON?</h1>'+
+    '<div class="fight-video-result">'+
+      '<div class="fight-video-result-label">FINAL STAT SCORE · '+scoreA+' — '+scoreB+'</div>'+
+      '<div class="fight-video-winner">'+esc(winner?.name||'WINNER')+'</div>'+
+      '<div class="fight-video-method">'+esc(bout.method||'RESULT')+(bout.titleFight?' · TITLE FIGHT':'')+'</div>'+
+    '</div>'+
+    '<div class="fight-video-progress">THE SUMMIT // '+(index+1)+' OF '+total+'</div>'+
+  '</div>';
 }
 
 function generateFightNightVideo(){
@@ -4578,11 +4637,35 @@ function generateFightNightVideo(){
       return;
     }
 
+    let scoreA=0;
+    let scoreB=0;
+
     summitScene(fightVideoScene(bout,index,bouts.length));
-    const hold=bout.mainEvent?4600:3000;
-    summitExitTimer=setTimeout(()=>playFightVideoBout(index+1),hold);
+
+    summitExitTimer=setTimeout(()=>playFightVideoStat(0),2400);
+
+    function playFightVideoStat(statIndex){
+      if(statIndex>=4){
+        summitScene(fightVideoResultScene(bout,index,bouts.length,scoreA,scoreB));
+        const hold=bout.mainEvent?4600:3000;
+        summitExitTimer=setTimeout(()=>playFightVideoBout(index+1),hold);
+        return;
+      }
+
+      const keys=['strength','intelligence','durability','speed'];
+      const aValue=Number(bout.a[keys[statIndex]])||0;
+      const bValue=Number(bout.b[keys[statIndex]])||0;
+
+      if(aValue>bValue)scoreA++;
+      if(bValue>aValue)scoreB++;
+
+      summitScene(fightVideoStatScene(bout,statIndex,bouts.length,scoreA,scoreB));
+
+      summitExitTimer=setTimeout(()=>playFightVideoStat(statIndex+1),1900);
+    }
   }
 }
+
 
 function generateRankingVideo(){
   const topTen=getRankedFighters().slice(0,10);
