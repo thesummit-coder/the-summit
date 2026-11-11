@@ -4659,11 +4659,11 @@ function renderFightNightWinnerStage(){
     return renderFightHome();
   }
 
-  document.getElementById('fightArea').innerHTML=\`
+  document.getElementById('fightArea').innerHTML=`
     <div class="versus">
-      \${esc(a.name)}
+      ${esc(a.name)}
       VS
-      \${esc(b.name)}
+      ${esc(b.name)}
     </div>
 
     <div class="fight-winner-stage">
@@ -4671,27 +4671,28 @@ function renderFightNightWinnerStage(){
       <p class="fight-winner-subtitle">Choose the winner of this fight</p>
 
       <div class="fight-grid">
-        <button class="fighter-choice \${currentFight.winner===a.id?'winner-selected':''}" onclick="selectFightNightWinner('\${a.id}')">
-          \${choiceInner(a)}
+        <button class="fighter-choice ${currentFight.winner===a.id?'winner-selected':''}" onclick="selectFightNightWinner('${a.id}')">
+          ${choiceInner(a)}
         </button>
 
-        <button class="fighter-choice \${currentFight.winner===b.id?'winner-selected':''}" onclick="selectFightNightWinner('\${b.id}')">
-          \${choiceInner(b)}
+        <button class="fighter-choice ${currentFight.winner===b.id?'winner-selected':''}" onclick="selectFightNightWinner('${b.id}')">
+          ${choiceInner(b)}
         </button>
       </div>
 
-      \${currentFight.winner ? \`
+      ${currentFight.winner ? `
         <div class="fight-winner-status">
-          WINNER SELECTED · \${esc(fighters.find(f=>f.id===currentFight.winner)?.name||'')}
+          WINNER SELECTED · ${esc(fighters.find(f=>f.id===currentFight.winner)?.name||'')}
         </div>
-      \` : ''}
+      ` : ''}
     </div>
 
     <button class="btn danger" onclick="renderFightHome()">
       BACK TO FIGHT NIGHT
     </button>
-  \`;
+  `;
 }
+
 
 function selectFightNightWinner(winId){
 
