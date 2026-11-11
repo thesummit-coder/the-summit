@@ -3931,11 +3931,25 @@ async function renderRankingIntelligence(ranked){
 
   try{
     let fights=[];
-    const result=await supabase
+    const fightQuery=supabase
       .from('fights')
       .select('fighter_a,fighter_b,winner,created_at')
       .order('created_at',{ascending:false})
       .limit(1000);
+
+    const result=await Promise.race([
+      fightQuery,
+      new Promise(resolve=>setTimeout(
+        ()=>resolve({
+          data:null,
+          error:{
+            code:'INTELLIGENCE_TIMEOUT',
+            message:'Fight data request timed out after 8 seconds.'
+          }
+        }),
+        8000
+      ))
+    ]);
 
     if(request!==rankingIntelligenceRequest)return;
 
@@ -3949,6 +3963,15 @@ async function renderRankingIntelligence(ranked){
       );
     }else{
       console.warn('Ranking Intelligence fight data unavailable; using fighter records.',result.error);
+      const code=esc(result.error?.code || 'UNKNOWN');
+      const message=esc(result.error?.message || 'Unknown Supabase error.');
+      root.innerHTML=
+        '<div class="intelligence-empty">'+
+        '<strong>RANKING INTELLIGENCE ERROR</strong><br>'+
+        '<span style="font-size:11px;letter-spacing:.2px;line-height:1.6">'+
+        code+'<br>'+message+
+        '</span></div>';
+      return;
     }
 
     const byId=new Map(ranked.map(f=>[String(f.id),f]));
