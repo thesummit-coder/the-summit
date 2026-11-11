@@ -4665,11 +4665,12 @@ function fightVideoWinnerStatsScene(bout,index,total){
       '<div class="fight-video-winner-stats-portrait">'+portrait+'</div>'+
       '<div class="fight-video-winner-stats-body">'+
         stats.map(([key,label])=>{
-          const value=Math.max(0,Math.min(100,(Number(winner[key])||0)*10));
+          const statValue=Math.max(0,Math.min(10,Number(winner[key])||0));
+          const value=statValue*10;
           return '<div class="fight-video-winner-stat '+key+'">'+
             '<div class="fight-video-winner-stat-label">'+label+'</div>'+
             '<div class="fight-video-winner-stat-bar"><span style="width:'+value+'%"></span></div>'+
-            '<div class="fight-video-winner-stat-value">'+value+'</div>'+
+            '<div class="fight-video-winner-stat-value">'+statValue+'</div>'+
           '</div>';
         }).join('')+
       '</div>'+
