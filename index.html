@@ -2550,7 +2550,8 @@ button{
 .fight-video-winner-stats-portrait{min-height:260px;background:#09182b;border-right:1px solid #23466e}
 .fight-video-winner-stats-portrait img{width:100%;height:100%;display:block;object-fit:cover;object-position:center 20%}
 .fight-video-winner-stats-portrait.empty{display:grid;place-items:center;color:#49627f;font-size:8px;font-weight:950;letter-spacing:1.4px}
-.fight-video-winner-stats-body{padding:17px 14px}
+.fight-video-winner-stats-body{padding:17px 14px;display:flex;flex-direction:column;justify-content:center}
+.fight-video-winner-stats-body:before{content:'WINNER';display:block;margin:0 0 14px;color:#38d996;font-size:9px;font-weight:950;letter-spacing:2.2px;text-transform:uppercase}
 .fight-video-winner-stat{display:grid;grid-template-columns:34px 1fr 26px;align-items:center;gap:7px;margin-bottom:12px}
 .fight-video-winner-stat:last-child{margin-bottom:0}
 .fight-video-winner-stat-label{color:#7188a5;font-size:8px;font-weight:950;letter-spacing:1px}
@@ -4664,7 +4665,7 @@ function fightVideoWinnerStatsScene(bout,index,total){
       '<div class="fight-video-winner-stats-portrait">'+portrait+'</div>'+
       '<div class="fight-video-winner-stats-body">'+
         stats.map(([key,label])=>{
-          const value=Math.max(0,Math.min(100,Number(winner[key])||0));
+          const value=Math.max(0,Math.min(100,(Number(winner[key])||0)*10));
           return '<div class="fight-video-winner-stat '+key+'">'+
             '<div class="fight-video-winner-stat-label">'+label+'</div>'+
             '<div class="fight-video-winner-stat-bar"><span style="width:'+value+'%"></span></div>'+
