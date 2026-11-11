@@ -5048,7 +5048,8 @@ async function completeFightNightBout(){
       fighter_b:currentFight.b,
       winner:currentFight.winner,
       method:currentFight.method,
-      fight_night:currentFight.night
+      fight_night:currentFight.night,
+      title_fight:!!currentFight.titleFight
     })
   });
 
@@ -5064,6 +5065,7 @@ async function completeFightNightBout(){
     bout.completed=true;
     bout.winner=currentFight.winner;
     bout.method=currentFight.method;
+    bout.titleFight=!!currentFight.titleFight;
   }
 
   const winnerName=fighters.find(f=>f.id===currentFight.winner)?.name||'Winner';
@@ -5081,7 +5083,12 @@ async function completeFightNightBout(){
 
   renderFightHome();
 
-  toast(winnerName+' wins by '+(bout?.method||'')+'.');
+  const championChanged=!!payload.champion_changed;
+  toast(
+    championChanged
+      ? winnerName+' is the NEW SUMMIT CHAMPION.'
+      : winnerName+' wins by '+(bout?.method||'')+'.'
+  );
 }
 
 function choiceInner(f){
