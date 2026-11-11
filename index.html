@@ -1958,6 +1958,24 @@ button{
   letter-spacing:1px;
 }
 
+.fight-night-fighter.fight-night-winner .fight-night-portrait{
+  border-color:#38d996;
+  box-shadow:0 0 0 1px rgba(56,217,150,.22),0 0 18px rgba(56,217,150,.12);
+}
+
+.fight-night-fighter.fight-night-loser .fight-night-portrait{
+  border-color:#ff6575;
+  box-shadow:0 0 0 1px rgba(255,101,117,.18),0 0 18px rgba(255,101,117,.08);
+}
+
+.fight-night-fighter.fight-night-winner .fight-night-name{
+  color:#eafff6;
+}
+
+.fight-night-fighter.fight-night-loser .fight-night-name{
+  color:#ff9aa7;
+}
+
 
 .versus{
   display:flex;
@@ -4647,13 +4665,13 @@ function renderFightNightCard(night){
 
     return '<button type="button" class="fight-night-bout'+(main?' main-event':'')+'" onclick="openFightNightBout('+index+')">'+
       '<div class="fight-night-number">#'+String(index+1).padStart(2,'0')+'</div>'+
-      '<div class="fight-night-fighter'+(aWinner?' fight-night-winner':'')+'">'+
+      '<div class="fight-night-fighter'+(aWinner?' fight-night-winner':completed?' fight-night-loser':'')+'">'+
         '<div class="fight-night-portrait">'+portrait(bout.a)+'</div>'+
         '<div><div class="fight-night-name">'+esc(bout.a.name)+(aWinner?'<span class="fight-night-winner-mark">WIN</span>':'')+'</div>'+
         '<div class="fight-night-record">W '+String(bout.a.wins).padStart(2,'0')+' — L '+String(bout.a.losses).padStart(2,'0')+'</div></div>'+
       '</div>'+
       '<div class="fight-night-vs">VS</div>'+
-      '<div class="fight-night-fighter right'+(bWinner?' fight-night-winner':'')+'">'+
+      '<div class="fight-night-fighter right'+(bWinner?' fight-night-winner':completed?' fight-night-loser':'')+'">'+
         '<div class="fight-night-portrait">'+portrait(bout.b)+'</div>'+
         '<div><div class="fight-night-name">'+esc(bout.b.name)+(bWinner?'<span class="fight-night-winner-mark">WIN</span>':'')+'</div>'+
         '<div class="fight-night-record">W '+String(bout.b.wins).padStart(2,'0')+' — L '+String(bout.b.losses).padStart(2,'0')+'</div></div>'+
