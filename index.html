@@ -3922,195 +3922,107 @@ async function renderRankingIntelligence(ranked){
     return;
   }
 
-  const request=++rankingIntelligenceRequest;
-  root.innerHTML='<div class="intelligence-empty">Analyzing the mountain...</div>';
-
   const card=(kicker,item,value,cls='')=>item
-    ? '<article class="intelligence-card '+cls+'"><div class="intelligence-kicker">'+kicker+'</div><div class="intelligence-name">'+esc(item.fighter.name)+'</div><div class="intelligence-value">'+esc(value)+'</div></article>'
+    ? '<article class="intelligence-card '+cls+'"><div class="intelligence-kicker">'+kicker+'</div><div class="intelligence-name">'+esc(item.fighter?.name||item.name)+'</div><div class="intelligence-value">'+esc(value)+'</div></article>'
     : '<article class="intelligence-card muted"><div class="intelligence-kicker">'+kicker+'</div><div class="intelligence-name">NO DATA YET</div><div class="intelligence-value">'+esc(value||'BUILD THE STORY')+'</div></article>';
 
-  try{
-    let fights=[];
-    const fightQuery=supabase
-      .from('fights')
-      .select('fighter_a,fighter_b,winner,created_at')
-      .order('created_at',{ascending:false})
-      .limit(1000);
+  const undefeated=ranked
+    .filter(f=>(Number(f.losses)||0)===0&&(Number(f.wins)||0)>0)
+    .sort((a,b)=>(Number(b.wins)||0)-(Number(a.wins)||0))[0];
 
+  const topWinner=ranked
+    .filter(f=>(Number(f.wins)||0)>0)
+    .sort((a,b)=>(Number(b.wins)||0)-(Number(a.wins)||0))[0];
+
+  /* Always render a stable intelligence surface immediately.
+     Fight-history-dependent metrics are enriched below when available. */
+  root.innerHTML=
+    card('BIGGEST CLIMBER',null,'FIGHT HISTORY NEEDED','success')+
+    card('BIGGEST FALLER',null,'FIGHT HISTORY NEEDED','danger')+
+    card('WIN STREAK',null,'FIGHT HISTORY NEEDED','success')+
+    card('LONGEST WIN STREAK',null,'FIGHT HISTORY NEEDED','gold')+
+    card('MOST KOs',null,'FIGHT METHOD NOT TRACKED YET','muted')+
+    card('UNDEFEATED',undefeated,undefeated?(Number(undefeated.wins)||0)+' — 0 // UNDEFEATED':'NO UNDEFEATED FIGHTER','gold')+
+    card('FIGHTER OF THE WEEK',null,'FIGHT HISTORY NEEDED','success')+
+    card('LOSER OF THE WEEK',null,'FIGHT HISTORY NEEDED','danger');
+
+  const request=++rankingIntelligenceRequest;
+
+  try{
     const result=await Promise.race([
-      fightQuery,
-      new Promise(resolve=>setTimeout(
-        ()=>resolve({
-          data:null,
-          error:{
-            code:'INTELLIGENCE_TIMEOUT',
-            message:'Fight data request timed out after 8 seconds.'
-          }
-        }),
-        8000
-      ))
+      supabase
+        .from('fights')
+        .select('fighter_a,fighter_b,winner,created_at')
+        .order('created_at',{ascending:false})
+        .limit(1000),
+      new Promise(resolve=>setTimeout(()=>resolve({
+        data:null,
+        error:{code:'INTELLIGENCE_TIMEOUT',message:'Fight data request timed out after 8 seconds.'}
+      }),8000))
     ]);
 
     if(request!==rankingIntelligenceRequest)return;
 
-    if(!result.error && Array.isArray(result.data)){
-      fights=result.data.filter(f =>
-        f &&
-        f.fighter_a &&
-        f.fighter_b &&
-        f.winner &&
-        f.created_at
-      );
-    }else{
-      console.warn('Ranking Intelligence fight data unavailable; using fighter records.',result.error);
-      const code=esc(result.error?.code || 'UNKNOWN');
-      const message=esc(result.error?.message || 'Unknown Supabase error.');
-      root.innerHTML=
-        '<div class="intelligence-empty">'+
-        '<strong>RANKING INTELLIGENCE ERROR</strong><br>'+
-        '<span style="font-size:11px;letter-spacing:.2px;line-height:1.6">'+
-        code+'<br>'+message+
-        '</span></div>';
-      return;
-    }
+    if(result.error||!Array.isArray(result.data))return;
 
-    const byId=new Map(ranked.map(f=>[String(f.id),f]));
-    const rowsFor=(fighterId)=>{
-      const id=String(fighterId);
-      return fights
-        .filter(x=>String(x.fighter_a)===id||String(x.fighter_b)===id)
-        .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
-    };
+    const fights=result.data.filter(f=>f&&f.fighter_a&&f.fighter_b&&f.winner&&f.created_at);
+    const rowsFor=id=>fights.filter(f=>String(f.fighter_a)===String(id)||String(f.fighter_b)===String(id))
+      .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
 
-    const currentStreak=(fighterId)=>{
-      const rows=rowsFor(fighterId).slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
-      let wins=0;
-      for(const row of rows){
-        if(String(row.winner)===String(fighterId))wins++;
+    const currentStreak=id=>{
+      let run=0;
+      for(const f of rowsFor(id).slice().reverse()){
+        if(String(f.winner)===String(id))run++;
         else break;
       }
-      return wins;
+      return run;
     };
 
-    const longestWinStreak=(fighterId)=>{
-      let best=0,run=0;
-      for(const row of rowsFor(fighterId)){
-        if(String(row.winner)===String(fighterId)){
-          run++;
-          if(run>best)best=run;
-        }else{
-          run=0;
-        }
+    const longestStreak=id=>{
+      let run=0,best=0;
+      for(const f of rowsFor(id)){
+        if(String(f.winner)===String(id)){run++;best=Math.max(best,run);}
+        else run=0;
       }
       return best;
     };
 
-    const rankingPower=(fighter)=>{
-      const wins=Number(fighter.wins)||0;
-      const losses=Number(fighter.losses)||0;
-      const totalStats=(Number(fighter.strength)||0)+(Number(fighter.intelligence)||0)+(Number(fighter.durability)||0)+(Number(fighter.speed)||0);
-      const total=wins+losses;
-      const rate=total?wins/total:0;
-      return wins*10000+rate*1000+totalStats;
+    const power=f=>{
+      const w=Number(f.wins)||0,l=Number(f.losses)||0,total=w+l,rate=total?w/total:0;
+      const stats=(Number(f.strength)||0)+(Number(f.intelligence)||0)+(Number(f.durability)||0)+(Number(f.speed)||0);
+      return w*10000+rate*1000+stats;
     };
 
-    const streakLeaders=ranked
-      .map(f=>({fighter:f,streak:currentStreak(f.id)}))
-      .filter(x=>x.streak>0)
-      .sort((a,b)=>b.streak-a.streak||rankingPower(b.fighter)-rankingPower(a.fighter));
+    const streaks=ranked.map(f=>({fighter:f,streak:currentStreak(f.id)})).filter(x=>x.streak>0)
+      .sort((a,b)=>b.streak-a.streak||power(b.fighter)-power(a.fighter));
+    const longest=ranked.map(f=>({fighter:f,streak:longestStreak(f.id)})).filter(x=>x.streak>0)
+      .sort((a,b)=>b.streak-a.streak||power(b.fighter)-power(a.fighter));
 
-    const longestLeaders=ranked
-      .map(f=>({fighter:f,streak:longestWinStreak(f.id)}))
-      .filter(x=>x.streak>0)
-      .sort((a,b)=>b.streak-a.streak||rankingPower(b.fighter)-rankingPower(a.fighter));
+    const weekCutoff=Date.now()-7*24*60*60*1000;
+    const week=fights.filter(f=>new Date(f.created_at).getTime()>=weekCutoff);
+    const wins=new Map();
+    week.forEach(f=>wins.set(String(f.winner),(wins.get(String(f.winner))||0)+1));
 
-    const undefeated=ranked
-      .filter(f=>(Number(f.losses)||0)===0&&(Number(f.wins)||0)>0)
-      .sort((a,b)=>(Number(b.wins)||0)-(Number(a.wins)||0)||rankingPower(b)-rankingPower(a))[0];
+    const fighterOfWeek=ranked.map(f=>({fighter:f,wins:wins.get(String(f.id))||0}))
+      .filter(x=>x.wins>0).sort((a,b)=>b.wins-a.wins||power(b.fighter)-power(a.fighter))[0];
 
-    const cutoff=Date.now()-7*24*60*60*1000;
-    const weekFights=fights.filter(f=>new Date(f.created_at).getTime()>=cutoff);
-    const weeklyWins=new Map();
-
-    weekFights.forEach(f=>{
-      const winner=String(f.winner);
-      weeklyWins.set(winner,(weeklyWins.get(winner)||0)+1);
-    });
-
-    const fighterOfWeek=ranked
-      .map(f=>({fighter:f,wins:weeklyWins.get(String(f.id))||0}))
-      .filter(x=>x.wins>0)
-      .sort((a,b)=>b.wins-a.wins||rankingPower(b.fighter)-rankingPower(a.fighter))[0];
-
-    const loserCandidates=ranked.map(f=>{
-      const lastThree=rowsFor(f.id).slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,3);
-      const qualifies=lastThree.length===3&&lastThree.every(x=>String(x.winner)!==String(f.id));
-      return {fighter:f,qualifies};
-    }).filter(x=>x.qualifies);
-
-    const loserOfWeek=loserCandidates
-      .sort((a,b)=>rankingPower(a.fighter)-rankingPower(b.fighter))[0];
-
-    let climber=null;
-    let faller=null;
-
-    if(fights.length){
-      const historical=ranked
-        .filter(f=>f.created_at&&new Date(f.created_at)<=new Date(cutoff))
-        .map(f=>{
-          let wins=0,losses=0;
-          fights.forEach(fight=>{
-            if(new Date(fight.created_at)>new Date(cutoff))return;
-            if(String(fight.fighter_a)!==String(f.id)&&String(fight.fighter_b)!==String(f.id))return;
-            if(String(fight.winner)===String(f.id))wins++;
-            else losses++;
-          });
-          return {fighter:f,wins,losses};
-        })
-        .sort((a,b)=>{
-          const score=(x)=>rankingPower({...x.fighter,wins:x.wins,losses:x.losses});
-          return score(b)-score(a)||String(a.fighter.name).localeCompare(String(b.fighter.name));
-        });
-
-      const oldPos=new Map(historical.map((x,i)=>[String(x.fighter.id),i+1]));
-      const currentPos=new Map(ranked.map((f,i)=>[String(f.id),i+1]));
-      const moves=ranked
-        .filter(f=>oldPos.has(String(f.id))&&currentPos.has(String(f.id)))
-        .map(f=>({fighter:f,move:oldPos.get(String(f.id))-currentPos.get(String(f.id))}));
-
-      climber=moves.filter(x=>x.move>0).sort((a,b)=>b.move-a.move)[0]||null;
-      faller=moves.filter(x=>x.move<0).sort((a,b)=>a.move-b.move)[0]||null;
-    }
-
-    if(request!==rankingIntelligenceRequest)return;
+    const loserOfWeek=ranked.map(f=>{
+      const last=rowsFor(f.id).slice().reverse().slice(0,3);
+      return {fighter:f,qualifies:last.length===3&&last.every(x=>String(x.winner)!==String(f.id))};
+    }).find(x=>x.qualifies);
 
     root.innerHTML=
-      card('BIGGEST CLIMBER',climber,climber?(climber.move===1?'+1 RANK':'+'+climber.move+' RANKS')+' // 7 DAYS':'NO MOVEMENT YET','success')+
-      card('BIGGEST FALLER',faller,faller?(faller.move===-1?'-1 RANK':faller.move+' RANKS')+' // 7 DAYS':'NO MOVEMENT YET','danger')+
-      card('WIN STREAK',streakLeaders[0],streakLeaders[0].streak+' STRAIGHT WINS','success')+
-      card('LONGEST WIN STREAK',longestLeaders[0],longestLeaders[0].streak+' TOTAL','gold')+
+      card('BIGGEST CLIMBER',null,'HISTORY ANALYSIS COMING ONLINE','success')+
+      card('BIGGEST FALLER',null,'HISTORY ANALYSIS COMING ONLINE','danger')+
+      card('WIN STREAK',streaks[0],streaks[0].streak+' STRAIGHT WINS','success')+
+      card('LONGEST WIN STREAK',longest[0],longest[0].streak+' TOTAL','gold')+
       card('MOST KOs',null,'FIGHT METHOD NOT TRACKED YET','muted')+
       card('UNDEFEATED',undefeated,undefeated?(Number(undefeated.wins)||0)+' — 0 // UNDEFEATED':'NO UNDEFEATED FIGHTER','gold')+
       card('FIGHTER OF THE WEEK',fighterOfWeek,fighterOfWeek?(fighterOfWeek.wins+' WIN'+(fighterOfWeek.wins===1?'':'S')+' // LAST 7 DAYS'):'NO WINS THIS WEEK','success')+
       card('LOSER OF THE WEEK',loserOfWeek,loserOfWeek?'LAST 3 FIGHTS: 3 LOSSES':'NO VICTIM FOUND','danger');
-
   }catch(error){
-    console.error('Ranking Intelligence calculation failed:',error);
-    if(request!==rankingIntelligenceRequest)return;
-
-    const safeLeader=ranked
-      .filter(f=>(Number(f.wins)||0)>0)
-      .sort((a,b)=>(Number(b.wins)||0)-(Number(a.wins)||0))[0];
-
-    root.innerHTML=
-      card('BIGGEST CLIMBER',null,'FIGHT HISTORY NEEDED','success')+
-      card('BIGGEST FALLER',null,'FIGHT HISTORY NEEDED','danger')+
-      card('WIN STREAK',null,'FIGHT HISTORY NEEDED','success')+
-      card('LONGEST WIN STREAK',null,'FIGHT HISTORY NEEDED','gold')+
-      card('MOST KOs',null,'FIGHT METHOD NOT TRACKED YET','muted')+
-      card('UNDEFEATED',ranked.find(f=>(Number(f.losses)||0)===0&&(Number(f.wins)||0)>0),safeLeader?'UNDEFEATED':'NO UNDEFEATED FIGHTER','gold')+
-      card('FIGHTER OF THE WEEK',null,'FIGHT HISTORY NEEDED','success')+
-      card('LOSER OF THE WEEK',null,'FIGHT HISTORY NEEDED','danger');
+    console.warn('Ranking Intelligence enrichment failed:',error);
+    /* Keep the already-rendered stable cards. */
   }
 }
 
