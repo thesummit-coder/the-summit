@@ -4847,11 +4847,24 @@ function beginFightNightBout(index){
 
 function startFight(a,b,fromFightNight=false){
 
+  const boutIndex =
+    fromFightNight && fightNightDraft
+      ? fightNightDraft.bouts.findIndex(
+          x => x.a.id===a.id && x.b.id===b.id
+        )
+      : null;
+
+  const bout =
+    fromFightNight && fightNightDraft && boutIndex>=0
+      ? fightNightDraft.bouts[boutIndex]
+      : null;
+
   currentFight={
     a:a.id,
     b:b.id,
     night:fromFightNight && fightNightDraft ? fightNightDraft.number : null,
-    boutIndex:fromFightNight && fightNightDraft ? fightNightDraft.bouts.findIndex(x=>x.a.id===a.id&&x.b.id===b.id) : null,
+    boutIndex,
+    titleFight:!!bout?.titleFight,
     winner:null
   };
 
