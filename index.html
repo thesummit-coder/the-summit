@@ -936,6 +936,80 @@ button{
   animation:summitRevealIn .55s cubic-bezier(.16,1,.3,1);
 }
 
+.summit-outro .summit-logo-mark{
+  margin-left:auto;
+  margin-right:auto;
+}
+
+.ranking-video-sweep{
+  width:min(92vw,620px);
+  text-align:center;
+  animation:summitRevealIn .62s cubic-bezier(.16,1,.3,1);
+}
+
+.ranking-video-sweep-viewport{
+  position:relative;
+  width:100%;
+  height:min(48vh,430px);
+  overflow:hidden;
+  margin-top:18px;
+  mask-image:linear-gradient(to bottom,transparent 0%,#000 12%,#000 88%,transparent 100%);
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 12%,#000 88%,transparent 100%);
+}
+
+.ranking-video-sweep-track{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+  width:100%;
+  animation:rankingSweepUp 5.2s linear forwards;
+}
+
+.ranking-video-sweep-fighter{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+  padding:9px;
+  border:1px solid rgba(63,145,255,.16);
+  border-radius:12px;
+  background:rgba(8,21,40,.72);
+  text-align:left;
+}
+
+.ranking-video-sweep-portrait{
+  width:46px;
+  height:58px;
+  flex:0 0 46px;
+  overflow:hidden;
+  border-radius:8px;
+  border:1px solid rgba(143,194,255,.14);
+  background:#081528;
+}
+
+.ranking-video-sweep-portrait img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.ranking-video-sweep-name{
+  min-width:0;
+  overflow:hidden;
+  color:#f4f7fb;
+  font-size:10px;
+  font-weight:950;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+@keyframes rankingSweepUp{
+  from{transform:translateY(0)}
+  to{transform:translateY(calc(-100% + min(48vh,430px)))}
+}
+
 .summit-outro .summit-headline{
   font-size:28px;
 }
@@ -4619,6 +4693,28 @@ function rankingVideoContender(fighter,rank,total){
     '</div>';
 }
 
+
+function rankingVideoSweep(fightersList){
+  const rows=fightersList.map(f=>{
+    const portrait=f.portrait_path
+      ? '<img src="'+portraitUrl(f)+'" alt="'+esc(f.name)+' portrait">'
+      : '';
+    return '<div class="ranking-video-sweep-fighter">'+
+      '<div class="ranking-video-sweep-portrait">'+portrait+'</div>'+
+      '<div class="ranking-video-sweep-name">'+esc(f.name)+'</div>'+
+      '</div>';
+  }).join('');
+
+  return '<div class="ranking-video-sweep">'+
+    '<div class="ranking-video-kicker">THE FIELD</div>'+
+    '<h1 class="summit-headline">THE SUMMIT<br>IS GROWING.</h1>'+
+    '<div class="summit-subline">EVERY FIGHTER IS PART OF THE CLIMB.</div>'+
+    '<div class="ranking-video-sweep-viewport">'+
+      '<div class="ranking-video-sweep-track">'+rows+'</div>'+
+    '</div>'+
+  '</div>';
+}
+
 function fightVideoFighter(f){
   const portrait=f.portrait_path
     ? '<img src="'+portraitUrl(f)+'" alt="'+esc(f.name)+' portrait">'
@@ -5267,6 +5363,7 @@ function generateRankingVideo(){
 
   const ranked=getRankedFighters();
   const contenders=ranked.slice(10,15);
+  const field=ranked.slice(15);
 
   function playRankingVideoFighter(index){
     const fighter=topTen[index];
@@ -5296,7 +5393,12 @@ function generateRankingVideo(){
   function playRankingVideoContender(index){
     const fighter=contenders[index];
     if(!fighter){
-      playRankingVideoOutro();
+      if(field.length){
+        summitScene(rankingVideoSweep(field));
+        summitExitTimer=setTimeout(playRankingVideoOutro,5400);
+      }else{
+        playRankingVideoOutro();
+      }
       return;
     }
 
@@ -5304,7 +5406,6 @@ function generateRankingVideo(){
     summitScene(rankingVideoContender(fighter,rank,contenders.length));
     summitExitTimer=setTimeout(()=>playRankingVideoContender(index+1),2600);
   }
-
   function playRankingVideoOutro(){
     summitScene(
       '<div class="summit-outro">'+
