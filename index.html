@@ -2641,6 +2641,94 @@ button{
 .fight-video-title-fight .fight-video-kicker{color:#ffe477;letter-spacing:3px}
 .fight-video-title-fight .fight-video-title{color:#ffe477;text-shadow:0 0 42px rgba(255,216,74,.28)}
 .fight-video-title-fight .fight-video-portrait{border-color:#b38a2f;box-shadow:0 0 0 1px rgba(255,216,74,.12),0 18px 42px rgba(0,0,0,.32)}
+
+.fight-video-main-event .fight-video-matchup{
+  position:relative;
+  margin-top:26px;
+  padding:16px 0 20px;
+}
+.fight-video-main-event .fight-video-matchup::before{
+  content:"";
+  position:absolute;
+  left:18%;
+  right:18%;
+  top:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,#ffe477,transparent);
+  box-shadow:0 0 18px rgba(255,216,74,.22);
+}
+.fight-video-main-event .fight-video-portrait{
+  height:220px;
+  border-color:rgba(255,216,74,.58);
+  box-shadow:0 0 0 1px rgba(255,216,74,.12),0 0 34px rgba(255,216,74,.12),0 24px 48px rgba(0,0,0,.36);
+  animation:mainEventPulse 2.4s ease-in-out infinite;
+}
+.fight-video-main-event .fight-video-vs{
+  color:#ffe477;
+  text-shadow:0 0 18px rgba(255,216,74,.25);
+}
+.fight-video-main-event .fight-video-subtitle{
+  color:#b8a56a;
+}
+.fight-video-title-fight .fight-video-kicker{
+  text-shadow:0 0 24px rgba(255,216,74,.25);
+}
+.fight-video-title-fight .fight-video-matchup::after{
+  content:"CHAMPIONSHIP";
+  position:absolute;
+  left:50%;
+  bottom:-2px;
+  transform:translateX(-50%);
+  padding:5px 12px;
+  border:1px solid rgba(255,216,74,.38);
+  border-radius:999px;
+  background:rgba(10,18,30,.94);
+  color:#ffe477;
+  font-size:7px;
+  font-weight:950;
+  letter-spacing:2px;
+}
+.fight-video-title-fight .fight-video-portrait{
+  animation:titleFightPulse 1.8s ease-in-out infinite;
+}
+.fight-video-title-fight .fight-video-title{
+  animation:titleFightGlow 1.8s ease-in-out infinite;
+}
+.fight-video-main-event .fight-video-stat-stage,
+.fight-video-title-fight .fight-video-stat-stage{
+  padding:10px 0;
+}
+.fight-video-main-event .fight-video-stat-number,
+.fight-video-title-fight .fight-video-stat-number{
+  text-shadow:0 0 26px rgba(255,216,74,.12);
+}
+.fight-video-title-fight .fight-video-stat-stage .fight-video-stat-side.leading{
+  box-shadow:0 0 36px rgba(255,216,74,.20);
+}
+.fight-video-title-fight .fight-video-result{
+  border-color:rgba(255,216,74,.38);
+  box-shadow:0 0 36px rgba(255,216,74,.10),0 18px 42px rgba(0,0,0,.28);
+}
+.fight-video-main-event .fight-video-result{
+  border-color:rgba(255,216,74,.28);
+  box-shadow:0 0 28px rgba(255,216,74,.07),0 18px 42px rgba(0,0,0,.28);
+}
+.fight-video-title-fight .fight-video-result-label,
+.fight-video-title-fight .fight-video-method{
+  color:#ffe477;
+}
+@keyframes mainEventPulse{
+  0%,100%{box-shadow:0 0 0 1px rgba(255,216,74,.10),0 0 28px rgba(255,216,74,.08),0 24px 48px rgba(0,0,0,.34)}
+  50%{box-shadow:0 0 0 1px rgba(255,216,74,.18),0 0 44px rgba(255,216,74,.16),0 24px 48px rgba(0,0,0,.34)}
+}
+@keyframes titleFightPulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.012)}
+}
+@keyframes titleFightGlow{
+  0%,100%{text-shadow:0 0 34px rgba(255,216,74,.22)}
+  50%{text-shadow:0 0 52px rgba(255,216,74,.38)}
+}
 .fight-night-launch{width:100%;text-align:center;animation:summitRevealIn .72s cubic-bezier(.16,1,.3,1)}
 .fight-night-launch .summit-overline{margin-bottom:14px}
 .fight-night-launch .fight-video-title{margin-bottom:16px}
@@ -5124,7 +5212,10 @@ function playFightNightAutoBout(index){
 
   const beginBout=()=>{
     summitScene(fightVideoScene(bout,index,fightNightDraft.bouts.length));
-    summitExitTimer=setTimeout(playStat,bout.titleFight?3200:(bout.mainEvent?3000:2400));
+    summitExitTimer=setTimeout(
+      playStat,
+      bout.titleFight ? 3800 : (bout.mainEvent ? 3400 : 2400)
+    );
   };
 
   if(index===0){
@@ -5174,8 +5265,8 @@ function playFightNightAutoBout(index){
               toast('Fight Night #'+String(fightNightDraft.number).padStart(3,'0')+' complete.');
             },2800);
           }
-        },winner?.champion && bout.titleFight?2800:2100);
-      },bout.mainEvent?2800:2400);
+        },winner?.champion && bout.titleFight?3600:(bout.mainEvent?2800:2100));
+      },bout.titleFight?4000:(bout.mainEvent?3400:2400));
       return;
     }
 
@@ -5187,7 +5278,10 @@ function playFightNightAutoBout(index){
 
     summitScene(fightVideoStatScene(bout,statIndex,fightNightDraft.bouts.length,scoreA,scoreB));
     statIndex++;
-    summitExitTimer=setTimeout(playStat,1900);
+    summitExitTimer=setTimeout(
+      playStat,
+      bout.titleFight ? 2400 : (bout.mainEvent ? 2200 : 1900)
+    );
   }
 }
 
