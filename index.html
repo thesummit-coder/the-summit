@@ -2512,6 +2512,20 @@ button{
 .fight-preview-decision{margin-top:18px;padding:16px;border:1px solid rgba(56,217,150,.28);border-radius:15px;background:rgba(13,32,54,.78);box-shadow:0 14px 32px rgba(0,0,0,.20)}
 .fight-preview-decision-label{color:#38d996;font-size:9px;font-weight:950;letter-spacing:2px;text-transform:uppercase}
 .fight-preview-decision-score{margin-top:8px;color:#f4f7fb;font-size:26px;font-weight:950;letter-spacing:1px}
+.fight-preview-vote-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin:14px 0 16px}
+.fight-preview-vote-card .fighter-card{max-height:31vh;min-height:0;grid-template-columns:42% 58%;animation:none}
+.fight-preview-vote-card .fighter-portrait{min-height:0;height:100%;padding:8px}
+.fight-preview-vote-card .portrait-mark{font-size:5px;letter-spacing:1px}
+.fight-preview-vote-card .fighter-body{padding:10px 9px}
+.fight-preview-vote-card .fighter-kicker{font-size:6px;letter-spacing:1.4px}
+.fight-preview-vote-card .fighter-identity .name{font-size:17px}
+.fight-preview-vote-card .fighter-divider{margin:8px 0}
+.fight-preview-vote-card .fighter-stat{grid-template-columns:22px 1fr 16px;gap:4px;margin-bottom:6px}
+.fight-preview-vote-card .fighter-stat-label{font-size:6px}
+.fight-preview-vote-card .fighter-stat-value{font-size:8px}
+.fight-preview-vote-card .record{margin-top:7px;padding:6px 5px;gap:4px;font-size:6px}
+.fight-preview-vote-card .record-label{font-size:5px}
+.fight-preview-vote-card .w,.fight-preview-vote-card .l{font-size:7px}
 .fight-preview-vote{margin-top:20px;color:#f4f7fb;font-size:28px;line-height:1;font-weight:950;letter-spacing:-1px}
 .fight-preview-vote-sub{margin-top:10px;color:#8fc2ff;font-size:9px;font-weight:950;letter-spacing:2px;text-transform:uppercase}
 .fight-preview-progress{margin-top:16px;color:#607895;font-size:9px;font-weight:900;letter-spacing:1.8px;text-transform:uppercase}
@@ -4761,10 +4775,13 @@ function fightPreviewStatScene(bout,statIndex,total,scoreA,scoreB){
 function fightPreviewDecisionScene(bout,index,total,scoreA,scoreB){
   return '<div class="fight-preview-fight">'+
     '<div class="fight-preview-kicker">COMMUNITY DECISION</div>'+
-    '<h1 class="fight-preview-title">THE STATS<br>CANNOT DECIDE.</h1>'+
     '<div class="fight-preview-decision">'+
       '<div class="fight-preview-decision-label">FINAL STAT SCORE</div>'+
       '<div class="fight-preview-decision-score">'+scoreA+' — '+scoreB+'</div>'+
+    '</div>'+
+    '<div class="fight-preview-vote-cards">'+
+      '<div class="fight-preview-vote-card">'+card(bout.a,false)+'</div>'+
+      '<div class="fight-preview-vote-card">'+card(bout.b,false)+'</div>'+
     '</div>'+
     '<div class="fight-preview-vote">WHO DO YOU GOT?</div>'+
     '<div class="fight-preview-vote-sub">'+esc(bout.a.name)+' VS '+esc(bout.b.name)+' · VOTE IN THE COMMENTS</div>'+
