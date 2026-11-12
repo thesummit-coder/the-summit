@@ -3065,42 +3065,6 @@ button{
 
 
 
-<!-- CHOOSE FIGHTERS MODAL -->
-
-<div
-  id="modal"
-  class="modal"
-  onclick="if(event.target===this)closeChoose()">
-
-
-  <div class="sheet">
-
-    <h3>
-      Choose Fighters
-    </h3>
-
-
-    <p>
-      Select two different fighters.
-    </p>
-
-
-    <div id="chooseList"></div>
-
-
-    <button
-      class="btn ghost"
-      onclick="closeChoose()">
-
-      CANCEL
-
-    </button>
-
-  </div>
-
-</div>
-
-
 </div>
 
 
@@ -3141,7 +3105,6 @@ let user = null;
 let fighters = [];
 let draft = null;
 let currentFight = null;
-let selected = [];
 let deleteMode = false;
 let championMode = false;
 
@@ -5664,53 +5627,32 @@ function beginFightNightBout(index){
 
 function startFight(a,b,fromFightNight=false){
 
-  const boutIndex =
-    fromFightNight && fightNightDraft
-      ? fightNightDraft.bouts.findIndex(
-          x => x.a.id===a.id && x.b.id===b.id
-        )
-      : null;
+  if(!fromFightNight || !fightNightDraft){
+    return;
+  }
 
-  const bout =
-    fromFightNight && fightNightDraft && boutIndex>=0
-      ? fightNightDraft.bouts[boutIndex]
-      : null;
+  const boutIndex=fightNightDraft.bouts.findIndex(
+    x => x.a.id===a.id && x.b.id===b.id
+  );
+
+  const bout=boutIndex>=0
+    ? fightNightDraft.bouts[boutIndex]
+    : null;
+
+  if(!bout){
+    return;
+  }
 
   currentFight={
     a:a.id,
     b:b.id,
-    night:fromFightNight && fightNightDraft ? fightNightDraft.number : null,
+    night:fightNightDraft.number,
     boutIndex,
-    titleFight:!!bout?.titleFight,
+    titleFight:!!bout.titleFight,
     winner:null
   };
 
-  if(fromFightNight){
-    renderFightNightWinnerStage();
-    return;
-  }
-
-  document.getElementById('fightArea').innerHTML=`
-    <div class="versus">
-      ${esc(a.name)}
-      VS
-      ${esc(b.name)}
-    </div>
-
-    <div class="fight-grid">
-      <button class="fighter-choice" onclick="resolveFight('${a.id}')">
-        ${choiceInner(a)}
-      </button>
-
-      <button class="fighter-choice" onclick="resolveFight('${b.id}')">
-        ${choiceInner(b)}
-      </button>
-    </div>
-
-    <button class="btn danger" onclick="renderFightHome()">
-      BACK TO FIGHT NIGHT
-    </button>
-  `;
+  renderFightNightWinnerStage();
 }
 
 
@@ -5946,171 +5888,6 @@ function choiceInner(f){
     </div>
   `;
 }
-
-/* RESOLVE FIGHT — retained until Fight Night resolution is wired */
-
-async function resolveFight(winId){
-
-  if(!currentFight)return;
-
-  const {a,b}=currentFight;
-
-  if(winId!==a&&winId!==b)return;
-
-  const token=(await supabase.auth.getSession()).data.session?.access_token;
-
-  if(!token)return toast('Please sign in again.');
-
-  const res=await fetch(RECORD_FIGHT_URL,{
-    method:'POST',
-    headers:{
-      'Authorization':'Bearer '+token,
-      'Content-Type':'application/json'
-    },
-    body:JSON.stringify({
-      fighter_a:a,
-      fighter_b:b,
-      winner:winId
-    })
-  });
-
-  const payload=await res.json().catch(()=>({}));
-
-  if(!res.ok)return toast(payload.error||'Fight could not be recorded.');
-
-  const winName=fighters.find(f=>f.id===winId)?.name||'Winner';
-  const loseId=a===winId?b:a;
-  const loseName=fighters.find(f=>f.id===loseId)?.name||'Opponent';
-
-  currentFight=null;
-
-  await loadFighters();
-  renderFightHome();
-
-  toast(winName+' wins. '+loseName+' takes the loss.');
-}
-
-/* CHOOSE FIGHTERS */
-
-function openChoose(){
-
-  if(fighters.length < 2){
-
-    return toast(
-      'Create at least two fighters.'
-    );
-
-  }
-
-
-  selected = [];
-
-
-  document.getElementById(
-    'chooseList'
-  ).innerHTML =
-
-    fighters
-      .map(f => `
-
-        <button
-          class="listbtn"
-          onclick="pickChoose('${f.id}')">
-
-          <b>
-            ${esc(f.name)}
-          </b>
-
-          <br>
-
-          <span
-            style="color:#8fa4bf;font-size:11px">
-
-            W ${f.wins} — L ${f.losses}
-
-          </span>
-
-        </button>
-
-      `)
-      .join('');
-
-
-  document.getElementById(
-    'modal'
-  ).classList.add('show');
-
-}
-
-
-
-/* PICK FIGHTER */
-
-function pickChoose(id){
-
-  if(selected.includes(id)){
-    return;
-  }
-
-
-  if(selected.length === 0){
-
-    selected = [id];
-
-    toast(
-      'Now choose the second fighter.'
-    );
-
-    return;
-
-  }
-
-
-  if(selected[0] === id){
-    return;
-  }
-
-
-  const a =
-    fighters.find(
-      f => f.id === selected[0]
-    );
-
-
-  const b =
-    fighters.find(
-      f => f.id === id
-    );
-
-
-  selected = [];
-
-
-  closeChoose();
-
-
-  go('fight');
-
-
-  startFight(a,b);
-
-}
-
-
-
-/* CLOSE MODAL */
-
-function closeChoose(){
-
-  document
-    .getElementById('modal')
-    .classList.remove('show');
-
-  selected = [];
-
-}
-
-
 
 /* AUTH STATE */
 
