@@ -1611,6 +1611,45 @@ button{
   margin-bottom:18px;
 }
 
+.fight-night-title-choice{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-bottom:2px;
+}
+
+.fight-night-title-choice button{
+  border:1px solid #23466e;
+  background:#0b192d;
+  color:#8fa4bf;
+  border-radius:12px;
+  padding:12px 8px;
+  font-size:9px;
+  font-weight:950;
+  letter-spacing:1px;
+  cursor:pointer;
+}
+
+.fight-night-title-choice button.active{
+  color:#f4f7fb;
+  border-color:#3f91ff;
+  background:rgba(63,145,255,.14);
+}
+
+.fight-night-title-choice button.title-active{
+  color:#ffd96a;
+  border-color:#b38a2f;
+  background:rgba(255,216,74,.08);
+}
+
+.fight-night-title-note{
+  margin:0 2px 6px;
+  color:#607895;
+  font-size:9px;
+  line-height:1.45;
+  text-align:center;
+}
+
 .fight-night-card{
   border:1px solid #23466e;
   border-radius:18px;
@@ -2920,8 +2959,19 @@ button{
   </div>
 
   <div class="fight-night-actions">
+    <div class="fight-night-title-choice">
+      <button id="fightNightNoTitleBtn" class="active" type="button" onclick="setFightNightTitleFight(false)">
+        NO TITLE FIGHT
+      </button>
+      <button id="fightNightTitleBtn" type="button" onclick="setFightNightTitleFight(true)">
+        TITLE FIGHT
+      </button>
+    </div>
+    <div class="fight-night-title-note">
+      TITLE FIGHT = SUMMIT CHAMPION vs TOP 10 CHALLENGER · MAIN EVENT
+    </div>
     <button class="btn primary" onclick="generateFightNight()">
-      GENERATE RANDOM CARD
+      GENERATE FIGHT NIGHT
     </button>
   </div>
 
@@ -5329,6 +5379,7 @@ async function deleteFighter(id){
 /* FIGHT NIGHT V1 */
 
 let fightNightDraft = null;
+let fightNightTitleFight = false;
 
 function renderFightHome(){
 
@@ -5360,13 +5411,53 @@ function renderFightHome(){
   area.innerHTML=renderFightNightCard(fightNightDraft);
 }
 
+function setFightNightTitleFight(enabled){
+  fightNightTitleFight=!!enabled;
+
+  const noTitle=document.getElementById('fightNightNoTitleBtn');
+  const title=document.getElementById('fightNightTitleBtn');
+
+  if(noTitle) noTitle.classList.toggle('active',!fightNightTitleFight);
+  if(title){
+    title.classList.toggle('active',fightNightTitleFight);
+    title.classList.toggle('title-active',fightNightTitleFight);
+  }
+}
+
 function generateFightNight(){
 
   if(fighters.length < 12){
     return toast('Create at least 12 fighters first.');
   }
 
-  const pool=[...fighters];
+  const ranked=getRankedFighters();
+  let pool=[...fighters];
+  let mainEvent=null;
+
+  if(fightNightTitleFight){
+    const champion=fighters.find(f=>f.champion);
+
+    if(!champion){
+      return toast('Establish a Summit Champion before generating a title fight.');
+    }
+
+    const challengers=ranked.slice(0,10).filter(f=>f.id!==champion.id);
+
+    if(!challengers.length){
+      return toast('A Top 10 challenger is required for a title fight.');
+    }
+
+    const challenger=challengers[Math.floor(Math.random()*challengers.length)];
+
+    pool=pool.filter(f=>f.id!==champion.id && f.id!==challenger.id);
+
+    mainEvent={
+      a:champion,
+      b:challenger,
+      mainEvent:true,
+      titleFight:true
+    };
+  }
 
   for(let i=pool.length-1;i>0;i--){
     const j=Math.floor(Math.random()*(i+1));
@@ -5375,26 +5466,33 @@ function generateFightNight(){
 
   const bouts=[];
 
-  for(let i=0;i<6;i++){
+  for(let i=0;i<5;i++){
     bouts.push({
       a:pool[i*2],
       b:pool[i*2+1],
-      mainEvent:i===5,
+      mainEvent:false,
       titleFight:false
     });
   }
 
+  bouts.push(mainEvent || {
+    a:pool[10],
+    b:pool[11],
+    mainEvent:true,
+    titleFight:false
+  });
+
   fightNightDraft={
     number:1,
     bouts,
-    createdAt:Date.now()
+    createdAt:Date.now(),
+    titleFight:!!fightNightTitleFight
   };
 
   resolveFightNightDraft();
   renderFightHome();
   window.scrollTo({top:0,left:0,behavior:'smooth'});
 }
-
 function renderFightNightCard(night){
 
   const rows=night.bouts.map((bout,index)=>{
