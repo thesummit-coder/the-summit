@@ -936,6 +936,30 @@ button{
   animation:summitRevealIn .55s cubic-bezier(.16,1,.3,1);
 }
 
+.ranking-video-intelligence{
+  width:min(92vw,620px);
+  text-align:center;
+  animation:summitRevealIn .62s cubic-bezier(.16,1,.3,1);
+}
+.ranking-video-intelligence .summit-headline{font-size:27px}
+.ranking-video-intelligence-list{display:grid;gap:10px;margin-top:20px}
+.ranking-video-intelligence-card{
+  padding:15px 16px;
+  border:1px solid rgba(63,145,255,.20);
+  border-radius:15px;
+  background:linear-gradient(145deg,rgba(13,32,54,.92),rgba(8,20,35,.88));
+  text-align:left;
+  animation:summitRevealIn .55s cubic-bezier(.16,1,.3,1);
+}
+.ranking-video-intelligence-kicker{color:#8fc2ff;font-size:8px;font-weight:950;letter-spacing:1.8px;text-transform:uppercase}
+.ranking-video-intelligence-name{margin-top:7px;color:#f4f7fb;font-size:18px;font-weight:950;text-transform:uppercase}
+.ranking-video-intelligence-value{margin-top:5px;color:#8fa4bf;font-size:10px;font-weight:900;letter-spacing:.8px;text-transform:uppercase}
+.ranking-video-intelligence-card.gold{border-color:rgba(215,174,78,.42);box-shadow:0 0 28px rgba(215,174,78,.06)}
+.ranking-video-intelligence-card.gold .ranking-video-intelligence-kicker,
+.ranking-video-intelligence-card.gold .ranking-video-intelligence-value{color:#d7ae4e}
+.ranking-video-intelligence-card.success{border-color:rgba(92,224,162,.25)}
+.ranking-video-intelligence-card.success .ranking-video-intelligence-kicker{color:#5ce0a2}
+
 .summit-outro .summit-logo-mark{
   margin-left:auto;
   margin-right:auto;
@@ -4715,6 +4739,80 @@ function rankingVideoSweep(fightersList){
   '</div>';
 }
 
+function rankingVideoIntelligenceScene(stories){
+  const cards=stories.map(story=>
+    '<article class="ranking-video-intelligence-card '+(story.tone||'')+'">'+
+      '<div class="ranking-video-intelligence-kicker">'+esc(story.kicker)+'</div>'+
+      '<div class="ranking-video-intelligence-name">'+esc(story.name)+'</div>'+
+      '<div class="ranking-video-intelligence-value">'+esc(story.value)+'</div>'+
+    '</article>'
+  ).join('');
+
+  return '<div class="ranking-video-intelligence">'+
+    '<div class="ranking-video-kicker">RANKING INTELLIGENCE</div>'+
+    '<h1 class="summit-headline">THE STORIES<br>BEHIND THE RANKING.</h1>'+
+    '<div class="ranking-video-intelligence-list">'+cards+'</div>'+
+  '</div>';
+}
+
+async function getRankingVideoIntelligence(ranked){
+  try{
+    const result=await Promise.race([
+      supabase.from('fights').select('fighter_a,fighter_b,winner,method,created_at').order('created_at',{ascending:false}).limit(1000),
+      new Promise(resolve=>setTimeout(()=>resolve({data:null,error:{code:'TIMEOUT'}}),5000))
+    ]);
+    if(result.error||!Array.isArray(result.data))return [];
+
+    const fights=result.data.filter(f=>f&&f.fighter_a&&f.fighter_b&&f.winner&&f.created_at);
+    if(!fights.length)return [];
+
+    const rowsFor=id=>fights.filter(f=>String(f.fighter_a)===String(id)||String(f.fighter_b)===String(id))
+      .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+
+    const currentStreak=id=>{
+      let run=0;
+      for(const f of rowsFor(id).slice().reverse()){
+        if(String(f.winner)===String(id))run++;
+        else break;
+      }
+      return run;
+    };
+
+    const koWins=new Map();
+    const weekWins=new Map();
+    const weekCutoff=Date.now()-7*24*60*60*1000;
+
+    fights.forEach(f=>{
+      if(String(f.method||'').toUpperCase()==='KO'){
+        const id=String(f.winner);
+        koWins.set(id,(koWins.get(id)||0)+1);
+      }
+      if(new Date(f.created_at).getTime()>=weekCutoff){
+        const id=String(f.winner);
+        weekWins.set(id,(weekWins.get(id)||0)+1);
+      }
+    });
+
+    const stories=[];
+    const streak=ranked.map(f=>({fighter:f,streak:currentStreak(f.id)}))
+      .filter(x=>x.streak>=2).sort((a,b)=>b.streak-a.streak)[0];
+    if(streak)stories.push({kicker:'WIN STREAK',name:streak.fighter.name,value:streak.streak+' STRAIGHT WINS',tone:'success'});
+
+    const ko=ranked.map(f=>({fighter:f,kos:koWins.get(String(f.id))||0}))
+      .filter(x=>x.kos>0).sort((a,b)=>b.kos-a.kos)[0];
+    if(ko)stories.push({kicker:'MOST KOs',name:ko.fighter.name,value:ko.kos+' WIN'+(ko.kos===1?'':'S')+' · '+ko.kos+' KO'+(ko.kos===1?'':'S'),tone:'gold'});
+
+    const week=ranked.map(f=>({fighter:f,wins:weekWins.get(String(f.id))||0}))
+      .filter(x=>x.wins>0).sort((a,b)=>b.wins-a.wins)[0];
+    if(week)stories.push({kicker:'FIGHTER OF THE WEEK',name:week.fighter.name,value:week.wins+' WIN'+(week.wins===1?'':'S')+' · LAST 7 DAYS',tone:'success'});
+
+    return stories.slice(0,3);
+  }catch(error){
+    console.warn('Ranking Video Intelligence failed:',error);
+    return [];
+  }
+}
+
 function fightVideoFighter(f){
   const portrait=f.portrait_path
     ? '<img src="'+portraitUrl(f)+'" alt="'+esc(f.name)+' portrait">'
@@ -5364,6 +5462,7 @@ function generateRankingVideo(){
   const ranked=getRankedFighters();
   const contenders=ranked.slice(10,15);
   const field=ranked.slice(15);
+  const intelligencePromise=getRankingVideoIntelligence(ranked);
 
   function playRankingVideoFighter(index){
     const fighter=topTen[index];
@@ -5406,7 +5505,17 @@ function generateRankingVideo(){
     summitScene(rankingVideoContender(fighter,rank,contenders.length));
     summitExitTimer=setTimeout(()=>playRankingVideoContender(index+1),2600);
   }
-  function playRankingVideoOutro(){
+  async function playRankingVideoOutro(){
+    const stories=await intelligencePromise;
+    if(stories.length){
+      summitScene(rankingVideoIntelligenceScene(stories));
+      summitExitTimer=setTimeout(playRankingVideoFinalOutro,5200);
+      return;
+    }
+    playRankingVideoFinalOutro();
+  }
+
+  function playRankingVideoFinalOutro(){
     summitScene(
       '<div class="summit-outro">'+
       '<div class="summit-logo-mark" aria-hidden="true"></div>'+
