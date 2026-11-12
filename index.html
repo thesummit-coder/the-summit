@@ -5222,6 +5222,33 @@ async function recordFightNightAutoResult(index){
   return true;
 }
 
+function fightNightTransitionScene(nextBout,index,total){
+  if(!nextBout){
+    return '<div class="fight-video-outro"><div class="summit-overline">THE SUMMIT</div><h1 class="summit-headline">THE RANKINGS<br>HAVE CHANGED.</h1><div class="summit-subline">FIGHT NIGHT COMPLETE</div></div>';
+  }
+  if(nextBout.titleFight){
+    return '<div class="fight-video-fight fight-video-title-fight">'+
+      '<div class="fight-video-kicker">NEXT</div>'+
+      '<h1 class="fight-video-title">SUMMIT<br>CHAMPIONSHIP</h1>'+
+      '<div class="fight-video-matchup">'+fightVideoFighter(nextBout.a)+'<div class="fight-video-vs">VS</div>'+fightVideoFighter(nextBout.b)+'</div>'+
+      '<div class="fight-video-subtitle">THE TITLE IS ON THE LINE</div>'+
+      '<div class="fight-video-progress">THE SUMMIT // '+(index+1)+' OF '+total+'</div>'+
+      '</div>';
+  }
+  if(nextBout.mainEvent){
+    return '<div class="fight-video-fight fight-video-main-event">'+
+      '<div class="fight-video-kicker">NEXT</div>'+
+      '<h1 class="fight-video-title">MAIN EVENT</h1>'+
+      '<div class="fight-video-subtitle">THE FINAL FIGHT OF THE NIGHT</div>'+
+      '</div>';
+  }
+  return '<div class="fight-video-fight">'+
+    '<div class="fight-video-kicker">NEXT</div>'+
+    '<h1 class="fight-video-title">FIGHT #'+String(index+1).padStart(2,'0')+'</h1>'+
+    '<div class="fight-video-subtitle">UP NEXT</div>'+
+    '</div>';
+}
+
 function playFightNightAutoBout(index){
   const bout=fightNightDraft?.bouts?.[index];
   if(!bout){
@@ -5302,8 +5329,15 @@ function playFightNightAutoBout(index){
         }
 
         const winner=fighters.find(f=>f.id===bout.plannedWinner);
+        const next=index+1;
+        const nextBout=fightNightDraft?.bouts?.[next];
+        summitScene(fightNightTransitionScene(nextBout,next,fightNightDraft.bouts.length));
+        const recorded=await recordFightNightAutoResult(index);
+        if(!recorded){
+          summitExitTimer=setTimeout(()=>exitSummitMode(),1200);
+          return;
+        }
         summitExitTimer=setTimeout(()=>{
-          const next=index+1;
           if(next<fightNightDraft.bouts.length){
             playFightNightAutoBout(next);
           }else{
@@ -5320,7 +5354,7 @@ function playFightNightAutoBout(index){
               toast('Fight Night #'+String(fightNightDraft.number).padStart(3,'0')+' complete.');
             },2800);
           }
-        },winner?.champion && bout.titleFight?3600:(bout.mainEvent?2800:2100));
+        },nextBout?.titleFight?700:nextBout?.mainEvent?900:700);
       },bout.titleFight?4000:(bout.mainEvent?3400:2400));
       return;
     }
