@@ -5494,7 +5494,7 @@ function renderFightNightCard(night){
           : bout.resolution==='COMMUNITY_CONFIRMED'
             ? '<div class="fight-night-result">COMMUNITY DECISION · '+esc((fighters.find(f=>f.id===bout.plannedWinner)||{}).name||'WINNER')+'</div>'
             : '<div class="fight-night-result">AUTO · '+esc(bout.plannedMethod||'RESULT')+'</div>')+
-    '</button>';
+    '</div>';
   }).join('');
 
   resolveFightNightDraft();
