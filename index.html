@@ -4716,6 +4716,210 @@ function fightNightStatScore(bout){
   return {scoreA,scoreB};
 }
 
+function resolveFightNightDraft(){
+  if(!fightNightDraft)return;
+  (fightNightDraft.bouts||[]).forEach(bout=>{
+    if(bout.communityWinner)return;
+    const {scoreA,scoreB}=fightNightStatScore(bout);
+    if(scoreA===4 || scoreB===4){
+      bout.plannedWinner=scoreA>scoreB?bout.a.id:bout.b.id;
+      bout.plannedMethod='KO';
+      bout.resolution='AUTO';
+    }else if(scoreA>scoreB || scoreB>scoreA){
+      bout.plannedWinner=scoreA>scoreB?bout.a.id:bout.b.id;
+      bout.plannedMethod='DECISION';
+      bout.resolution='AUTO';
+    }else{
+      bout.plannedWinner=null;
+      bout.plannedMethod='DECISION';
+      bout.resolution='COMMUNITY';
+    }
+  });
+}
+
+function fightNightNeedsCommunity(){
+  resolveFightNightDraft();
+  return !!getFightNightPreviewBouts().some(bout=>!bout.communityWinner);
+}
+
+function communityReadyForFightNight(){
+  resolveFightNightDraft();
+  return !getFightNightPreviewBouts().some(bout=>!bout.communityWinner);
+}
+
+function confirmCommunityWinner(index,winnerId){
+  if(!fightNightDraft)return;
+  const bout=fightNightDraft.bouts[index];
+  if(!bout || bout.resolution!=='COMMUNITY')return;
+  if(winnerId!==bout.a.id && winnerId!==bout.b.id)return;
+
+  bout.communityWinner=winnerId;
+  bout.plannedWinner=winnerId;
+  bout.plannedMethod='DECISION';
+  bout.resolution='COMMUNITY_CONFIRMED';
+  renderFightHome();
+  toast((fighters.find(f=>f.id===winnerId)?.name||'Winner')+' confirmed by community.');
+}
+
+function startFightNight(){
+  if(!fightNightDraft)return toast('Generate a Fight Night card first.');
+  resolveFightNightDraft();
+  if(!communityReadyForFightNight()){
+    return toast('Resolve every community decision before starting Fight Night.');
+  }
+  if(summitMode)return;
+
+  const unfinished=fightNightDraft.bouts.findIndex(b=>!b.completed);
+  if(unfinished<0)return toast('Fight Night is already complete.');
+
+  playFightNightAutoBout(unfinished);
+}
+
+async function recordFightNightAutoResult(index){
+  const bout=fightNightDraft?.bouts?.[index];
+  if(!bout || bout.completed)return true;
+
+  const winner=bout.plannedWinner;
+  if(!winner)return false;
+
+  const token=(await supabase.auth.getSession()).data.session?.access_token;
+  if(!token){
+    toast('Please sign in again.');
+    return false;
+  }
+
+  const res=await fetch(RECORD_FIGHT_URL,{
+    method:'POST',
+    headers:{
+      'Authorization':'Bearer '+token,
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify({
+      fighter_a:bout.a.id,
+      fighter_b:bout.b.id,
+      winner,
+      method:bout.plannedMethod,
+      fight_night:fightNightDraft.number,
+      title_fight:!!bout.titleFight
+    })
+  });
+
+  const payload=await res.json().catch(()=>({}));
+  if(!res.ok){
+    toast(payload.error||'Fight could not be recorded.');
+    return false;
+  }
+
+  bout.completed=true;
+  bout.winner=winner;
+  bout.method=bout.plannedMethod;
+  bout.championChanged=!!payload.champion_changed;
+
+  await loadFighters();
+
+  fightNightDraft.bouts.forEach(item=>{
+    item.a=fighters.find(f=>f.id===item.a.id)||item.a;
+    item.b=fighters.find(f=>f.id===item.b.id)||item.b;
+  });
+
+  return true;
+}
+
+function playFightNightAutoBout(index){
+  const bout=fightNightDraft?.bouts?.[index];
+  if(!bout){
+    renderFightHome();
+    return;
+  }
+
+  if(bout.completed){
+    playFightNightAutoBout(index+1);
+    return;
+  }
+
+  const score=fightNightStatScore(bout);
+  let statIndex=0;
+  let scoreA=0;
+  let scoreB=0;
+
+  summitMode=true;
+  if(summitExitTimer){clearTimeout(summitExitTimer);summitExitTimer=null;}
+  document.body.classList.add('summit-mode');
+
+  const overlay=document.getElementById('summitOverlay');
+  if(overlay){
+    overlay.setAttribute('aria-hidden','false');
+    overlay.classList.add('show');
+  }
+
+  try{
+    const root=document.documentElement;
+    if(root.requestFullscreen){
+      const result=root.requestFullscreen({navigationUI:'hide'});
+      if(result&&typeof result.catch==='function')result.catch(()=>{});
+    }
+  }catch(_error){}
+
+  summitScene(fightVideoScene(bout,index,fightNightDraft.bouts.length));
+  summitExitTimer=setTimeout(playStat,2400);
+
+  function playStat(){
+    if(statIndex>=4){
+      summitScene(fightVideoResultScene({
+        ...bout,
+        winner:bout.plannedWinner,
+        method:bout.plannedMethod
+      },index,fightNightDraft.bouts.length,scoreA,scoreB));
+
+      summitExitTimer=setTimeout(async()=>{
+        summitScene(fightVideoWinnerStatsScene({
+          ...bout,
+          winner:bout.plannedWinner,
+          method:bout.plannedMethod
+        },index,fightNightDraft.bouts.length));
+
+        const recorded=await recordFightNightAutoResult(index);
+        if(!recorded){
+          summitExitTimer=setTimeout(()=>exitSummitMode(),1200);
+          return;
+        }
+
+        const winner=fighters.find(f=>f.id===bout.plannedWinner);
+        summitExitTimer=setTimeout(()=>{
+          const next=index+1;
+          if(next<fightNightDraft.bouts.length){
+            playFightNightAutoBout(next);
+          }else{
+            summitScene(
+              '<div class="fight-video-outro">'+
+                '<div class="summit-overline">THE SUMMIT</div>'+
+                '<h1 class="summit-headline">THE RANKINGS<br>HAVE CHANGED.</h1>'+
+                '<div class="summit-subline">FIGHT NIGHT COMPLETE</div>'+
+              '</div>'
+            );
+            summitExitTimer=setTimeout(()=>{
+              exitSummitMode();
+              renderFightHome();
+              toast('Fight Night #'+String(fightNightDraft.number).padStart(3,'0')+' complete.');
+            },2800);
+          }
+        },winner?.champion && bout.titleFight?2800:2100);
+      },bout.mainEvent?2800:2400);
+      return;
+    }
+
+    const key=['strength','intelligence','durability','speed'][statIndex];
+    const aValue=Number(bout.a[key])||0;
+    const bValue=Number(bout.b[key])||0;
+    if(aValue>bValue)scoreA++;
+    if(bValue>aValue)scoreB++;
+
+    summitScene(fightVideoStatScene(bout,statIndex,fightNightDraft.bouts.length,scoreA,scoreB));
+    statIndex++;
+    summitExitTimer=setTimeout(playStat,1900);
+  }
+}
+
 function getFightNightPreviewBouts(){
   if(!fightNightDraft)return [];
   return (fightNightDraft.bouts||[]).filter(bout=>{
@@ -5182,6 +5386,7 @@ function generateFightNight(){
     createdAt:Date.now()
   };
 
+  resolveFightNightDraft();
   renderFightHome();
   window.scrollTo({top:0,left:0,behavior:'smooth'});
 }
@@ -5218,12 +5423,21 @@ function renderFightNightCard(night){
         '<div><div class="fight-night-name">'+esc(bout.b.name)+(bWinner?'<span class="fight-night-winner-mark">WIN</span>':'')+'</div>'+
         '<div class="fight-night-record">W '+String(bout.b.wins).padStart(2,'0')+' — L '+String(bout.b.losses).padStart(2,'0')+'</div></div>'+
       '</div>'+
-      (completed ? '<div class="fight-night-result">'+esc(winnerName)+' · '+esc(bout.method||'RESULT')+'</div>' : '')+
+      (completed
+        ? '<div class="fight-night-result">'+esc(winnerName)+' · '+esc(bout.method||'RESULT')+'</div>'
+        : bout.resolution==='COMMUNITY'
+          ? '<div class="fight-night-result community-pending">COMMUNITY DECISION PENDING</div>'
+          : bout.resolution==='COMMUNITY_CONFIRMED'
+            ? '<div class="fight-night-result">COMMUNITY DECISION · '+esc((fighters.find(f=>f.id===bout.plannedWinner)||{}).name||'WINNER')+'</div>'
+            : '<div class="fight-night-result">AUTO · '+esc(bout.plannedMethod||'RESULT')+'</div>')+
     '</button>';
   }).join('');
 
+  resolveFightNightDraft();
   const completedCount=night.bouts.filter(b=>b.completed).length;
-  const previewCount=getFightNightPreviewBouts().length;
+  const previewBouts=getFightNightPreviewBouts();
+  const previewCount=previewBouts.filter(b=>!b.communityWinner).length;
+  const readyToStart=communityReadyForFightNight();
 
   return '<section class="fight-night-card">'+
     '<div class="fight-night-card-head">'+
@@ -5233,7 +5447,10 @@ function renderFightNightCard(night){
     rows+
   '</section>'+ 
   (previewCount
-    ? '<button class="btn primary" onclick="generateFightPreview()">GENERATE FIGHT PREVIEW · '+previewCount+'</button>'
+    ? '<button class="btn primary" onclick="generateFightPreview()">GENERATE COMMUNITY PREVIEW · '+previewCount+'</button>'
+    : '')+
+  (!completedCount && readyToStart
+    ? '<button class="btn primary" onclick="startFightNight()">START FIGHT NIGHT</button>'
     : '')+
   (completedCount===night.bouts.length
     ? '<button class="btn primary" onclick="generateFightNightVideo()">GENERATE FIGHT NIGHT VIDEO</button>'
