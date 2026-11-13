@@ -3292,7 +3292,7 @@ button{
 
 <!-- SUPABASE -->
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/dist/umd/supabase.min.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2.57.0/dist/umd/supabase.min.js"></script>
 
 
 <script>
@@ -4090,23 +4090,43 @@ async function login(){
   }
 
 
-  const {error} =
-    await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
+  try{
+
+    if(!window.supabase){
+
+      return authError(
+        'Login service could not be loaded. Please reload the page.'
+      );
+
+    }
 
 
-  if(error){
+    const {error} =
+      await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
-    return authError(
-      error.message
+
+    if(error){
+
+      return authError(
+        error.message
+      );
+
+    }
+
+
+    authError('');
+
+  }catch(error){
+
+    authError(
+      error?.message ||
+      'Login failed. Please reload the page and try again.'
     );
 
   }
-
-
-  authError('');
 
 }
 
