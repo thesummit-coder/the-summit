@@ -5342,16 +5342,13 @@ function playFightNightAutoBout(index){
           method:bout.plannedMethod
         },index,fightNightDraft.bouts.length));
 
-        const recorded=await recordFightNightAutoResult(index);
-        if(!recorded){
-          summitExitTimer=setTimeout(()=>exitSummitMode(),1200);
-          return;
-        }
-
         const winner=fighters.find(f=>f.id===bout.plannedWinner);
         const next=index+1;
         const nextBout=fightNightDraft?.bouts?.[next];
+
+        // Show the next-fight transition immediately while the result is recorded in the background.
         summitScene(fightNightTransitionScene(nextBout,next,fightNightDraft.bouts.length));
+
         const recorded=await recordFightNightAutoResult(index);
         if(!recorded){
           summitExitTimer=setTimeout(()=>exitSummitMode(),1200);
