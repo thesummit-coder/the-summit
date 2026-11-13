@@ -5078,7 +5078,7 @@ function fightVideoResultScene(bout,index,total,scoreA,scoreB){
   '</div>';
 }
 
-function fightVideoWinnerStatsScene(bout,index,total){
+function fightVideoWinnerStatsScene(bout,index,total,normalizeStats=false){
   const winnerId=bout.winner;
   const winner=bout.a.id===winnerId?bout.a:bout.b.id===winnerId?bout.b:null;
   if(!winner){
@@ -5106,7 +5106,10 @@ function fightVideoWinnerStatsScene(bout,index,total){
       '<div class="fight-video-winner-stats-portrait">'+portrait+'</div>'+
       '<div class="fight-video-winner-stats-body">'+
         stats.map(([key,label])=>{
-          const statValue=Math.max(0,Math.min(10,Number(winner[key])||0));
+          const rawValue=Number(winner[key])||0;
+          const statValue=normalizeStats
+            ? Math.max(0,Math.min(10,rawValue>10 ? rawValue/10 : rawValue))
+            : Math.max(0,Math.min(10,rawValue));
           const value=statValue*10;
           return '<div class="fight-video-winner-stat '+key+'">'+
             '<div class="fight-video-winner-stat-label">'+label+'</div>'+
@@ -5341,7 +5344,7 @@ function playFightNightAutoBout(index){
           ...bout,
           winner:bout.plannedWinner,
           method:bout.plannedMethod
-        },index,fightNightDraft.bouts.length));
+        },index,fightNightDraft.bouts.length,!bout.titleFight));
 
         const winner=fighters.find(f=>f.id===bout.plannedWinner);
         const next=index+1;
