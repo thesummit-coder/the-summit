@@ -5336,6 +5336,7 @@ function playFightNightAutoBout(index){
       },index,fightNightDraft.bouts.length,scoreA,scoreB));
 
       summitExitTimer=setTimeout(async()=>{
+        // Give the winner's full card its own cinematic beat before moving on.
         summitScene(fightVideoWinnerStatsScene({
           ...bout,
           winner:bout.plannedWinner,
@@ -5346,14 +5347,18 @@ function playFightNightAutoBout(index){
         const next=index+1;
         const nextBout=fightNightDraft?.bouts?.[next];
 
-        // Show the next-fight transition immediately while the result is recorded in the background.
-        summitScene(fightNightTransitionScene(nextBout,next,fightNightDraft.bouts.length));
+        // Record in parallel while the winner card is on screen, so there is no loading pause.
+        const recordedPromise=recordFightNightAutoResult(index);
+        await new Promise(resolve=>setTimeout(resolve,bout.titleFight?3200:(bout.mainEvent?2800:2200)));
 
-        const recorded=await recordFightNightAutoResult(index);
+        const recorded=await recordedPromise;
         if(!recorded){
           summitExitTimer=setTimeout(()=>exitSummitMode(),1200);
           return;
         }
+
+        // Only after the winner moment, tease the next fight.
+        summitScene(fightNightTransitionScene(nextBout,next,fightNightDraft.bouts.length));
         summitExitTimer=setTimeout(()=>{
           if(next<fightNightDraft.bouts.length){
             playFightNightAutoBout(next);
