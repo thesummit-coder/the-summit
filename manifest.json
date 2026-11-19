@@ -1,0 +1,10 @@
+{
+  "name": "THE SUMMIT",
+  "short_name": "THE SUMMIT",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#02070f",
+  "theme_color": "#07101f"
+}
