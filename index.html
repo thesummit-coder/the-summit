@@ -3586,6 +3586,122 @@ function clearStatRoll(){
 let summitMode = false;
 let summitExitTimer = null;
 
+/* SUMMIT ROULETTE AUDIO — generated locally with Web Audio API */
+let summitAudioContext = null;
+let summitAudioMaster = null;
+
+function summitAudioEnsure(){
+  try{
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if(!AudioCtx)return false;
+
+    if(!summitAudioContext){
+      summitAudioContext = new AudioCtx();
+      summitAudioMaster = summitAudioContext.createGain();
+      summitAudioMaster.gain.value = 0.24;
+      summitAudioMaster.connect(summitAudioContext.destination);
+    }
+
+    if(summitAudioContext.state === 'suspended'){
+      summitAudioContext.resume().catch(()=>{});
+    }
+
+    return true;
+  }catch(_error){
+    return false;
+  }
+}
+
+function summitAudioTone(freq,duration,type='sine',volume=.06,endFreq=null,delay=0){
+  if(!summitAudioEnsure())return;
+
+  try{
+    const ctx=summitAudioContext;
+    const now=ctx.currentTime+delay;
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+
+    osc.type=type;
+    osc.frequency.setValueAtTime(Math.max(20,freq),now);
+    if(endFreq){
+      osc.frequency.exponentialRampToValueAtTime(Math.max(20,endFreq),now+duration);
+    }
+
+    gain.gain.setValueAtTime(.0001,now);
+    gain.gain.exponentialRampToValueAtTime(Math.max(.0001,volume),now+.008);
+    gain.gain.exponentialRampToValueAtTime(.0001,now+duration);
+
+    osc.connect(gain);
+    gain.connect(summitAudioMaster);
+
+    osc.start(now);
+    osc.stop(now+duration+.02);
+  }catch(_error){}
+}
+
+function summitAudioNoise(duration=.08,volume=.045,frequency=1500,delay=0){
+  if(!summitAudioEnsure())return;
+
+  try{
+    const ctx=summitAudioContext;
+    const length=Math.max(1,Math.floor(ctx.sampleRate*duration));
+    const buffer=ctx.createBuffer(1,length,ctx.sampleRate);
+    const data=buffer.getChannelData(0);
+
+    for(let i=0;i<length;i++){
+      data[i]=(Math.random()*2)-1;
+    }
+
+    const source=ctx.createBufferSource();
+    const filter=ctx.createBiquadFilter();
+    const gain=ctx.createGain();
+    const now=ctx.currentTime+delay;
+
+    filter.type='bandpass';
+    filter.frequency.value=frequency;
+    filter.Q.value=.7;
+
+    gain.gain.setValueAtTime(.0001,now);
+    gain.gain.exponentialRampToValueAtTime(Math.max(.0001,volume),now+.006);
+    gain.gain.exponentialRampToValueAtTime(.0001,now+duration);
+
+    source.buffer=buffer;
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(summitAudioMaster);
+    source.start(now);
+    source.stop(now+duration+.02);
+  }catch(_error){}
+}
+
+function summitAudioStatStart(index){
+  const bases=[110,165,135,220];
+  const base=bases[index]||150;
+
+  summitAudioTone(base,.24,'sawtooth',.045,base*1.9);
+  summitAudioTone(base*2,.18,'triangle',.025,base*2.7,.035);
+  summitAudioNoise(.055,.018,900,.02);
+}
+
+function summitAudioTick(index){
+  const bases=[170,250,205,320];
+  const base=bases[index]||220;
+
+  summitAudioTone(base,.045,'square',.018,base*.82);
+}
+
+function summitAudioLock(index,target){
+  const bases=[110,165,135,220];
+  const base=bases[index]||150;
+  const value=Math.max(1,Math.min(10,Number(target)||1));
+  const accent=base*(1+value*.055);
+
+  summitAudioNoise(.12,.06,850);
+  summitAudioTone(62,.30,'sine',.085,42);
+  summitAudioTone(accent,.24,'triangle',.07,accent*1.35,.025);
+  summitAudioTone(accent*2,.34,'sine',.035,accent*2.2,.06);
+}
+
 function summitScene(html){
   const scene = document.getElementById('summitScene');
   if(scene){
@@ -3832,6 +3948,7 @@ function generateStats(){
   }
 
   clearStatRoll();
+  summitAudioEnsure();
 
   draft = {
     strength:rand(),
@@ -3934,6 +4051,8 @@ function generateStats(){
       stageClasses[key] +
       ' stage-enter';
 
+    summitAudioStatStart(index);
+
     rollLabel.textContent = labels[key];
     rollHint.textContent = 'PREPARING';
     rollValue.classList.remove('locked','spitting','spinning');
@@ -3943,12 +4062,19 @@ function generateStats(){
 
       rollHint.textContent = 'ROLLING';
 
+      let audioTickCount = 0;
+
       const spitNumber = value => {
 
         rollValue.classList.remove('spitting');
         void rollValue.offsetWidth;
         rollValue.textContent = value;
         rollValue.classList.add('spitting');
+
+        audioTickCount++;
+        if(audioTickCount % 3 === 0){
+          summitAudioTick(index);
+        }
 
       };
 
@@ -4028,6 +4154,7 @@ function generateStats(){
 
       function lockRoll(){
 
+        summitAudioLock(index,target);
         rollHint.textContent = 'LOCKED IN';
         rollValue.classList.remove('spitting','spinning');
 
