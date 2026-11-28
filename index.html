@@ -2442,13 +2442,39 @@ button{
 }
 
 .fighter-detail-overlay #fighterHistory{
-  flex:1 1 auto;
+  flex:0 0 auto;
+  width:80vw;
+  max-width:335px;
   min-height:0;
+  max-height:calc(100vh - 620px);
+  margin:0 auto;
   overflow-y:auto;
   overscroll-behavior:contain;
   -webkit-overflow-scrolling:touch;
-  padding:0 2px 12px;
+  padding:0 0 12px;
   scrollbar-width:thin;
+}
+
+.fighter-detail-overlay .record{
+  gap:14px;
+  margin-top:20px;
+  padding:10px 8px 9px;
+}
+
+.fighter-detail-overlay .record .w,
+.fighter-detail-overlay .record .l{
+  min-width:48px;
+  font-size:14px;
+}
+
+.fighter-detail-overlay .record .w:before,
+.fighter-detail-overlay .record .l:before{
+  font-size:7px;
+  letter-spacing:1.5px;
+}
+
+.fighter-detail-overlay .record > span:nth-child(3){
+  height:24px;
 }
 
 .fighter-detail-overlay .fighter-card:after{
