@@ -987,15 +987,15 @@ button{
 }
 
 .summit-performance .fighter-card{
-  width:100%;
-  max-height:min(72vh,560px);
-  margin:0;
+  width:min(88vw,560px);
+  max-height:min(64vh,500px);
+  margin:4vh auto 0;
   text-align:left;
   animation:summitRevealIn .62s cubic-bezier(.16,1,.3,1);
 }
 
 .summit-performance .fighter-portrait{
-  min-height:310px;
+  min-height:270px;
 }
 
 .summit-outro{
@@ -1140,11 +1140,12 @@ button{
 
 @media (max-width:360px){
   .summit-performance .fighter-portrait{
-    min-height:280px;
+    min-height:250px;
   }
 
   .summit-performance .fighter-card{
-    max-height:68vh;
+    width:88vw;
+    max-height:62vh;
   }
 
   .summit-headline{
@@ -3077,7 +3078,7 @@ button{
     <input
       id="nameInput"
       class="input create-name"
-      maxlength="20"
+      maxlength="10"
       placeholder="Enter fighter name"
       autocomplete="off">
 
@@ -4586,6 +4587,8 @@ function portraitUrl(f){
 
 function card(f,owner=true){
 
+  const displayName = String(f?.name || '').slice(0,10);
+
   const statRows = [
     ['STR',f.strength],
     ['INT',f.intelligence],
@@ -4609,7 +4612,7 @@ function card(f,owner=true){
     <article class="card fighter-card${f.champion ? ' champion' : ''}${owner && deleteMode ? ' delete-target' : ''}" onclick="${owner && deleteMode ? 'deleteFighter(\'' + f.id + '\')' : owner && championMode ? 'setChampion(\'' + f.id + '\')' : 'openFighterDetails(\'' + f.id + '\')'}">
 
       <div class="fighter-portrait${f.portrait_path ? ' has-image' : ''}">
-        ${f.portrait_path ? `<img src="${portraitUrl(f)}" alt="${esc(f.name)} portrait" loading="lazy">` : ''}
+        ${f.portrait_path ? `<img src="${portraitUrl(f)}" alt="${esc(displayName)} portrait" loading="lazy">` : ''}
         <div class="portrait-mark">${f.portrait_path ? 'THE SUMMIT // FIGHTER IDENTITY' : 'SUMMIT // CONTENDER'}</div>
       </div>
 
@@ -4619,7 +4622,7 @@ function card(f,owner=true){
 
           <div class="fighter-identity">
             <div class="fighter-kicker">${f.champion ? 'SUMMIT CHAMPION' : 'CONTENDER'}</div>
-            <div class="name">${esc(f.name)}</div>
+            <div class="name">${esc(displayName)}</div>
             ${f.champion ? '<div class="champion-badge">SUMMIT CHAMPION</div>' : ''}
           </div>
 
