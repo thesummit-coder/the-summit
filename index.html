@@ -4556,13 +4556,9 @@ async function createFighter(){
 
   rollingStats = false;
 
-  summitShowFinalCard(fighter);
-
-  const outroTimer = setTimeout(() => {
-    summitShowOutro();
-  },6000);
-
-  statRevealTimers.push(outroTimer);
+  // The detailed fighter card now lives on Rankings.
+  // Create stays focused on the roulette, identity forging and outro.
+  summitShowOutro();
 
 }
 
