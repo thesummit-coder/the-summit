@@ -921,9 +921,54 @@ button{
   text-transform:uppercase;
 }
 
-.summit-performance .roll-stage{
+.summit-roll-shell{
   width:100%;
-  min-height:250px;
+  min-height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  padding:clamp(22px,6vh,52px) 0;
+}
+
+.summit-roll-brand{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  opacity:.92;
+}
+
+.summit-roll-brand .summit-logo-mark{
+  width:48px;
+  height:48px;
+  margin:0;
+  animation:none;
+  box-shadow:
+    0 0 28px rgba(63,145,255,.10),
+    inset 0 0 16px rgba(63,145,255,.05);
+}
+
+.summit-roll-watermark{
+  color:#8fa4bf;
+  font-size:8px;
+  font-weight:950;
+  letter-spacing:2.4px;
+  text-transform:uppercase;
+}
+
+.summit-roll-content{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.summit-performance .roll-stage{
+  width:min(86vw,360px);
+  min-height:220px;
   margin:0;
 }
 
@@ -3735,12 +3780,7 @@ function enterSummitMode(){
     overlay.classList.add('show');
   }
 
-  summitScene(`
-    <div class="summit-logo-mark" aria-hidden="true"></div>
-    <div class="summit-overline">THE SUMMIT</div>
-    <h1 class="summit-headline">A NEW CONTENDER<br>IS ENTERING.</h1>
-    <div class="summit-subline">THE WORLD BEGINS HERE</div>
-  `);
+  summitScene('');
 
   // Works where the browser supports the Fullscreen API.
   // The overlay itself still gives us the cinematic viewport everywhere else.
@@ -3984,18 +4024,6 @@ function generateStats(){
     revealCard.innerHTML = '';
   }
 
-  const introTimer = setTimeout(() => {
-
-    summitScene(`
-      <div class="summit-overline">THE SUMMIT</div>
-      <h1 class="summit-headline">${esc(name)}</h1>
-      <div class="summit-subline">A NEW CONTENDER HAS ENTERED</div>
-    `);
-
-  },3000);
-
-  statRevealTimers.push(introTimer);
-
   const keys = [
     'strength',
     'intelligence',
@@ -4037,13 +4065,21 @@ function generateStats(){
     const key = keys[index];
     const target = draft[key];
 
-    // The stat roulette stays in the main create markup so the proven
-    // animation remains unchanged; Summit Mode simply presents it fullscreen.
-    summitScene('');
-    const summitSceneEl = document.getElementById('summitScene');
+    // Keep every roulette frame inside a TikTok-safe, branded container.
+    summitScene(
+      '<div class="summit-roll-shell">'+
+        '<div class="summit-roll-brand">'+
+          '<div class="summit-logo-mark" aria-hidden="true"></div>'+
+          '<div class="summit-roll-watermark">THE SUMMIT</div>'+
+        '</div>'+
+        '<div class="summit-roll-content" id="summitRollContent"></div>'+
+      '</div>'
+    );
 
-    if(summitSceneEl){
-      summitSceneEl.appendChild(rollStage);
+    const summitRollContent = document.getElementById('summitRollContent');
+
+    if(summitRollContent){
+      summitRollContent.appendChild(rollStage);
     }
 
     rollStage.className =
@@ -4199,12 +4235,8 @@ function generateStats(){
 
   };
 
-  const startTimer = setTimeout(() => {
-    // Give the intro and fighter reveal their full story beats before the roulette starts.
-    rollNext(0);
-  },5500);
-
-  statRevealTimers.push(startTimer);
+  // No pre-roll intro: the first frame is already the first stat roulette.
+  rollNext(0);
 
 }
 
