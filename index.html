@@ -2391,7 +2391,7 @@ button{
   display:flex;
   align-items:flex-start;
   justify-content:center;
-  padding:max(14px,calc(env(safe-area-inset-top) + 14px)) 12px calc(108px + env(safe-area-inset-bottom));
+  padding:max(72px,calc(env(safe-area-inset-top) + 72px)) 12px calc(108px + env(safe-area-inset-bottom));
   background:
     radial-gradient(circle at 50% 42%,rgba(63,145,255,.09),transparent 34%),
     rgba(2,7,15,.78);
@@ -2421,9 +2421,10 @@ button{
 
 .fighter-detail-overlay .fighter-card{
   position:relative;
-  width:100%;
+  width:80vw;
+  max-width:335px;
   flex:0 0 auto;
-  margin:0;
+  margin:0 auto 28px;
   opacity:0;
   transform:translateY(18px) scale(.955);
   box-shadow:
